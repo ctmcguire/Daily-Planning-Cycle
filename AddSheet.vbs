@@ -8,16 +8,9 @@ With ThisWorkbook
 'The Raw2 worksheet is the template for new sheets.
 'The historicals, weekly level observations and formatting changes made on Raw2 will be pasted into all subsequent new sheets.
 .Sheets("Raw2").Range("A1:P150").Copy
+
+
 'The Raw2 template is pasted into the new sheet.
-
-'With .Sheets(SheetName).Range("A1")
-    '.PasteSpecial xlPasteColumnWidths
-    '.PasteSpecial xlPasteValues, , False, False
-    '.PasteSpecial xlPasteFormulas
-    '.PasteSpecial xlPasteFormats, , False, False
-'End With
-
-
 .Sheets(SheetName).Range("A1").PasteSpecial xlPasteColumnWidths
 .Sheets("Raw2").Range("A3:P150").Copy Destination:=Sheets(SheetName).Range("A3")
 .Sheets("Raw2").Range("F1").Copy Destination:=Sheets(SheetName).Range("F1")
@@ -45,23 +38,7 @@ With btn
     .Placement = Excel.XlPlacement.xlFreeFloating
 End With
 
-'.Sheets("Raw2").Shapes("Upload2Web").Copy
-'With .Sheets(InputDate)
-'    .Paste
-'    .Shapes("Upload2Web").Top = 5
-'    .Shapes("Upload2Web").Left = 100
-'    .Shapes("Upload2Web").Width = 90
-'    .Shapes("Upload2Web").Height = 25
-'End With
 
-'.Sheets("Raw2").Shapes("PrintDPC").Copy
-'With .Sheets(InputDate)
-'    .Paste
-'    .Shapes("PrintDPC").Top = 5
-'    .Shapes("PrintDPC").Left = 200
-'    .Shapes("PrintDPC").Width = 90
-'    .Shapes("PrintDPC").Height = 25
-'End With
 '-----------------------------------------------------------------------------------------------------------------------------'
 'The date is loaded into cell B6 on the new sheet.
 'Cell formulas in the sheet populate the remaining dates.
