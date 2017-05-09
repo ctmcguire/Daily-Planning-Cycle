@@ -22,6 +22,7 @@ Sub LockCells(SheetName As String, InputDate As Date)
 	For Each DPCsheet In ThisWorkbook.Worksheets
 		If DPCsheet.name = PrevDate Then
 			PrevFound = True
+			Exit For 'If we've already found PrevDate, we don't need to continue looking for it
 		End If
 	Next
 	If Not PrevFound Then
