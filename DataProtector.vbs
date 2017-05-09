@@ -17,7 +17,7 @@ Sub LockCells(SheetName As String, InputDate As Date)
 	PrevDate = Format(DateAdd("d", -7, InputDate), "mmm d")
 	PrevFound = False
 
-	'This 'For' loop checks that the a sheet for the requested date does not already exist.
+	'This 'For' loop checks that the sheet to be locked does in fact exist
 	Dim DPCsheet As Excel.Worksheet
 	For Each DPCsheet In ThisWorkbook.Worksheets
 		If DPCsheet.name = PrevDate Then
@@ -27,8 +27,7 @@ Sub LockCells(SheetName As String, InputDate As Date)
 	If Not PrevFound Then
 		'If the sheet from 7 days ago does not exist, the user is alerted of the potential consequences
 		Dim Answer As Integer
-		Answer = MsgBox("A sheet for '" & PrevDate & "' was not found; as a result, this sheet's protection may not function as expected", vbOKOnly, "Missing Sheet for " & PrevDate)
-	'End If
+		Answer = MsgBox("A sheet for '" & PrevDate & "' was not found; as a result, '" & PrevDate & "' cannot be properly locked", vbOKOnly, "Missing Sheet for " & PrevDate)
 
 	'The With statement is used to ensure the macro does not modify other workbooks that may be open.
 	Else
