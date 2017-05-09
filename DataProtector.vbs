@@ -32,14 +32,14 @@ Sub LockCells(SheetName As String, InputDate As Date)
 
 	'The With statement is used to ensure the macro does not modify other workbooks that may be open.
 	Else
-	With ThisWorkbook
-		'The sheet from 7 days before the current date is unprotected.
-		.Sheets(PrevDate).Unprotect
-		'The previously unlocked cells are locked.
-		.Sheets(PrevDate).Range("A1:M80").Locked = True
-		'The entire sheet is now protected.
-		.Sheets(PrevDate).Protect
-	End With
+		With ThisWorkbook
+			'The sheet from 7 days before the current date is unprotected.
+			.Sheets(PrevDate).Unprotect
+			'The previously unlocked cells are locked.
+			.Sheets(PrevDate).Range("A1:M80").Locked = True
+			'The entire sheet is now protected.
+			.Sheets(PrevDate).Protect
+		End With
 	End If
 
 	With ThisWorkbook
@@ -52,7 +52,7 @@ Sub LockCells(SheetName As String, InputDate As Date)
 		.Save
 		.Application.DisplayAlerts = False
 		'A backup copy is saved to the Water Management Files folder and the local desktop.
-		.SaveCopyAs "N:\common_folder\Water Management Files\Backup Automated Daily Planning Cycle  - 2016.xlsm"
-		.SaveCopyAs CreateObject("WScript.Shell").SpecialFolders("Desktop") & Application.PathSeparator & "Backup Automated Daily Planning Cycle  - 2016.xlsm"
+		.SaveCopyAs "N:\common_folder\Water Management Files\Backup " & ThisWorkbook.name
+		.SaveCopyAs CreateObject("WScript.Shell").SpecialFolders("Desktop") & Application.PathSeparator & "Backup " & ThisWorkbook.name
 	End With
 End Sub
