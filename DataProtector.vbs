@@ -27,7 +27,7 @@ Sub LockCells(SheetName As String, InputDate As Date)
 	If Not PrevFound Then
 		'If the sheet from 7 days ago does not exist, the user is alerted of the potential consequences
 		Dim Answer As Integer
-		Answer = MsgBox("A sheet for '" & InputDay & "' was not found; as a result, this sheet's protection may not function as expected", vbOKOnly, "Missing Sheet for " & PrevDate)
+		Answer = MsgBox("A sheet for '" & PrevDate & "' was not found; as a result, this sheet's protection may not function as expected", vbOKOnly, "Missing Sheet for " & PrevDate)
 	'End If
 
 	'The With statement is used to ensure the macro does not modify other workbooks that may be open.
