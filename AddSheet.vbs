@@ -7,7 +7,7 @@ With ThisWorkbook
 
 'The Raw2 worksheet is the template for new sheets.
 'The historicals, weekly level observations and formatting changes made on Raw2 will be pasted into all subsequent new sheets.
-.Sheets("Raw2").Range("A1:P150").Copy 'Test
+.Sheets("Raw2").Range("A1:P150").Copy 
 
 
 'The Raw2 template is pasted into the new sheet. 
