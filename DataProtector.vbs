@@ -1,6 +1,6 @@
 Option Explicit
 
-Sub LockCells(SheetName As String, InputDate As Date)
+Sub LockCells(SheetName As String, InputDate As Date) 
 	'-----------------------------------------------------------------------------------------------------------------------------'
 	'Please send any questions or feedback to cmcguire@mvc.on.ca
 	'-----------------------------------------------------------------------------------------------------------------------------'
@@ -8,12 +8,11 @@ Sub LockCells(SheetName As String, InputDate As Date)
 	'-----------------------------------------------------------------------------------------------------------------------------'
 	'The PrevDate variable is used to protect the 7 day data.
 	Dim PrevDate As String
-	'The PrevFound variable is used to determine whether or not the PrevDate sheet was found (and therefore exists)
+	'The PrevFound variable is used to determine whether or not the PrevDate sheet was found (and therefore exists).
 	Dim PrevFound As Boolean
-	'The 'DateAdd' function is used to calculate the date from 7 days ago.
-
-	'The DateAdd function is nested inside the Format function and is used to calculate the previous date.
-	'The Format function rearrages the date so that it can be processed by the KiWIS server.
+	
+	'The DateAdd function is nested inside the Format function and is used to calculate the previous date (7 days).
+	'The Format function rearrages the date so that it matches the format of the sheet names.
 	PrevDate = Format(DateAdd("d", -7, InputDate), "mmm d")
 	PrevFound = False
 
@@ -48,10 +47,10 @@ Sub LockCells(SheetName As String, InputDate As Date)
 		'The sheet is protected and by default, the weather data is locked.
 		.Sheets(SheetName).Protect AllowInsertingRows:=True, AllowFormattingCells:=True, AllowFormattingColumns:=True, AllowFormattingRows:=True
 		
-		'The daily planning cycle file is saved.
+		'The Daily Planning Cycle file is saved.
 		.Save
 		.Application.DisplayAlerts = False
-		'A backup copy is saved to the Water Management Files folder and the local desktop.
+		'A backup copy is saved to the 'Water Management Files' folder and the local desktop.
 		.SaveCopyAs "N:\common_folder\Water Management Files\Backup " & ThisWorkbook.name
 		.SaveCopyAs CreateObject("WScript.Shell").SpecialFolders("Desktop") & Application.PathSeparator & "Backup " & ThisWorkbook.name
 	End With
