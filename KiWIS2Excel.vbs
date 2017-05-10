@@ -28,7 +28,7 @@ Const FlowGaugeCount As Integer = 12
 Const LevelGaugeCount As Integer = 16
 
 Const FlowOffset As Integer = 6
-Const LevelOffset As Integer = FlowOffset + FlowGaugeCount + 4
+Const LevelOffset As Integer = FlowOffset + FlowGaugeCount + 5
 
 'The GaugeExceptions arrays keep track of exceptions that gauges may fall into
 Dim FlowGaugeExceptions(FlowGaugeCount, 1) As Boolean
