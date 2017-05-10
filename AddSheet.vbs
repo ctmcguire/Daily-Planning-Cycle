@@ -40,7 +40,7 @@ Sub CreateSheet(SheetName As String, InputDate As Date)
 		'-----------------------------------------------------------------------------------------------------------------------------'
 		'The date is loaded into cell B6 on the new sheet and cell formulas in the sheet populate the remaining dates.
 		Range("B6").Value = InputDate
-		Range("C6:C15, C21:C35").Value = TimeValue(InputDate)
+		Range("C6:C15, C17:C18, C23:C29, C31:C39").Value = TimeValue(InputDate)
 
 	End With
 End Sub
