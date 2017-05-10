@@ -22,6 +22,8 @@ Dim KiWISDate2 As String
 'The URL1 and URL2 variables are used to assemble the KiWIS URL address.
 Dim URL1 As String
 Dim URL2 As String
+'The Dest variable is used to store the destination value for the QueryTable.add method
+Dim Dest As Range
 'The variables 'i' and 'z' are used as counters in the loop.
 Dim i As Integer
 Dim z As Integer
@@ -60,50 +62,35 @@ z = 1
 'The 'i' counter navigates the TimeSeriesID array.
 'Calls battery levels before previous 6 hours of precipitation which modifies KiWISDate
 For i = 0 To UBound(TimeSeriesID)
+
+    'Set URL2
+    URL2 = URL1 & TimeSeriesID(i) & KiWISDate
     If i = 1 Then
-        'Loads precipitation from previous 24h
         URL2 = URL1 & TimeSeriesID(i) & PrevDate
-        'The QueryTables function downloads and imports the data from the KiWIS server to Raw1.
-        With ThisWorkbook.Sheets("Raw1").QueryTables.Add(Connection:=URL2, Destination:=ThisWorkbook.Sheets("Raw1").Range("D2"))
-            .BackgroundQuery = True
-            .TablesOnlyFromHTML = True
-            .Refresh BackgroundQuery:=False
-            .SaveData = True
-        End With
-    ElseIf i < 5 Then
-        'Loads the Daily Levels, Daily Flows, Daily Water Temperature and Daily Air Temperature time series groups.
-        URL2 = URL1 & TimeSeriesID(i) & KiWISDate
-        With ThisWorkbook.Sheets("Raw1").QueryTables.Add(Connection:=URL2, Destination:=ThisWorkbook.Sheets("Raw1").Cells(2, z))
-            .BackgroundQuery = True
-            .TablesOnlyFromHTML = True
-            .Refresh BackgroundQuery:=False
-            .SaveData = True
-        End With
-     ElseIf i = 5 Then
-        'Loads the battery levels of gauges'
-        URL2 = URL1 & TimeSeriesID(i) & KiWISDate
-        With ThisWorkbook.Sheets("Raw1").QueryTables.Add(Connection:=URL2, Destination:=ThisWorkbook.Sheets("Raw1").Range("S2"))
-          .BackgroundQuery = True
-          .TablesOnlyFromHTML = True
-          .Refresh BackgroundQuery:=False
-          .SaveData = True
-        End With
     ElseIf i = 6 Then
-        'Loads Previous 6 hours of Precipitation
-        KiWISDate = Left(KiWISDate, 16)
-        KiWISDate = KiWISDate & "T" & Hour(InputDate) - 6 & ":00:00.000-05:00&to=" & Right(KiWISDate, 10) & "T" & Hour(InputDate) & ":00:00.000-05:00"
-        URL2 = URL1 & TimeSeriesID(i) & KiWISDate
-        With ThisWorkbook.Sheets("Raw1").QueryTables.Add(Connection:=URL2, Destination:=ThisWorkbook.Sheets("Raw1").Range("P2"))
-            .BackgroundQuery = True
-            .TablesOnlyFromHTML = True
-            .Refresh BackgroundQuery:=False
-            .SaveData = True
-        End With
+        URL2 = URL1 & TimeSeriesID(i) & Left(KiWISDate, 16) & "T" & Hour(InputDate) - 6 & ":00:00.000-05:00&to=" & Right(Left(KiWISDate, 16), 10) & "T" & Hour(InputDate) & ":00:00.000-05:00"
     End If
 
-'The 'z' counter navigates the columns in Raw1.
-'Each time series group takes up 3 columns.
-z = z + 3
+    'Set Dest
+    Set Dest = ThisWorkbook.Sheets("Raw1").Cells(2, z)
+    If i = 1 Then
+        Set Dest = ThisWorkbook.Sheets("Raw1").Range("D2")
+    ElseIf i = 5 Then
+        Set Dest = ThisWorkbook.Sheets("Raw1").Range("S2")
+    ElseIf i = 6 Then
+        Set Dest = ThisWorkbook.Sheets("Raw1").Range("P2")
+    End If
+
+    With ThisWorkbook.Sheets("Raw1").QueryTables.Add(Connection:=URL2, Destination:=Dest)
+        .BackgroundQuery = True
+        .TablesOnlyFromHTML = True
+        .Refresh BackgroundQuery:=False
+        .SaveData = True
+    End With
+
+    'The 'z' counter navigates the columns in Raw1.
+    'Each time series group takes up 3 columns.
+    z = z + 3
 Next i
 
 End Sub
