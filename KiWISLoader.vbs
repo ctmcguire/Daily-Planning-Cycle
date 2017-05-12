@@ -18,7 +18,6 @@ Sub KiWIS_Import(InputDate As Date)
 Dim PrevDate As String
 'The KiWISDate variable stores the requested date in a KiWIS friendly format.
 Dim KiWISDate As String
-Dim KiWISDate2 As String
 'The URL1 and URL2 variables are used to assemble the KiWIS URL address.
 Dim URL1 As String
 Dim URL2 As String
