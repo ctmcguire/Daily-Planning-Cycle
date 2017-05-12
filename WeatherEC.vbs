@@ -99,8 +99,7 @@ Sub ECWeatherScraper(SheetName As String)
 		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<title>") + 7, Len(HTML_Data))
 		DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "</title>") - 1)
 		'The SheetName variable is recieved from the datepicker in the 'Update' form.
-		.Sheets(SheetName).Range("B" & Day).Value = DataString
-		Day = Day + 1
+		.Sheets(SheetName).Range("B" & DayOffset).Value = DataString
 
 		For i = 0 to UBound(Data)
 			DataString = "N/A" 'Default value in case some of the data (specifically wind chill) isn't in the html string
