@@ -21,15 +21,17 @@ Sub ECWeatherScraper(SheetName As String)
 	Dim Low As Integer
 	'The Day variable is used to navigate the rows.
 	Dim Day As Integer
+	Const DayOffset As Integer = 111 'Stores the first row of the forecast section
 
-	Dim i As Integer
-	Dim StrEnd As Integer
-	'The 
-	Dim Data(9) As String
-	Dim Cell(9) As String
+	Dim i As Integer 'Loop iterator variable
+
+	Dim Data(9) As String 'The Data array stores the names for all the data so that they can be found in the html code
+	Dim Cell(9) As String 'The Cell array stores the cells which are given the data from the html code
+
+	Dim StrEnd As Integer 'The StrEnd variable is used to change where the datastring should end, for when it is desirable to cut off some of the data
+
 	'The With statement is used to ensure the macro does not modify other workbooks that may be open.
 	With ThisWorkbook
-		Day = 105
 		'-----------------------------------------------------------------------------------------------------------------------------'
 
 		Data(0) = "Observed at:"
@@ -101,104 +103,48 @@ Sub ECWeatherScraper(SheetName As String)
 		Day = Day + 1
 
 		For i = 0 to UBound(Data)
-			DataString = "N/A"
+			DataString = "N/A" 'Default value in case some of the data (specifically wind chill) isn't in the html string
+
+			'If the data is in the html string, extract it
 			If InStr(HTML_Data, "<b>" & Data(i) & "</b>") > 0 Then
 				HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<b>" & Data(i) & "</b>") + Len("<b>" & Data(i) & "</b>"), Len(HTML_Data))
-				StrEnd = 1
+				StrEnd = 1 'Don't include the "<" from "<br/>" in the data
 
 				If i = 2 Or i = 7 Then
-					StrEnd = 8
+					StrEnd = 8 'Remove the "degrees Celsius" from the end of the temperature and dewpoint data
 				ElseIf i = 9 Then
-					StrEnd = 2
+					StrEnd = 2 'Remove that random extra space from the end of the air quality data
 				End If
 
-				DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "<br/>") - StrEnd)
+				DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "<br/>") - StrEnd) 'extract the data from the html string
 			End If
 
-			.Sheets(SheetName).Range(Cell(i)).Value = DataString
+			.Sheets(SheetName).Range(Cell(i)).Value = DataString 'Set the value of the appropriate cell
 		next i
-
-'		next_row:
-'		'Isolates the observation and current condition data.
-'		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "</b>") + 5, Len(HTML_Data))
-'		DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "<br/>") - 1)
-'		.Sheets(SheetName).Range("B" & Day).Value = DataString
-'		Day = Day + 1
-'		'This 'If' loop repeates the code from the 'next_row:' to extract the observation and current condition data.
-'		'next i
-'
-'		'Isolates the current temperature data.
-'		'?Mid(Mid(HTML_Data, InStr(HTML_Data, "<b>Temperature:</b>") + 20, Len(HTML_Data)), 1, InStr(Mid(HTML_Data, InStr(HTML_Data, "<b>Temperature:</b>") + 20, Len(HTML_Data)), "<br/>") - 8)
-'		'?Mid(Mid(HTML_Data, InStr(HTML_Data, "</b>") + 5, Len(HTML_Data)), 1, InStr(Mid(HTML_Data, InStr(HTML_Data, "</b>") + 5, Len(HTML_Data)), "<br/>") - 8)
-'		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<b>Temperature:</b>") + 20, Len(HTML_Data))
-'		DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "<br/>") - 8)
-'		.Sheets(SheetName).Range("B" & Day).Value = DataString
-'
-'		next_string:
-'		'Isolates the Pressure, Visibility and Humidity data
-'		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "</b>") + 5, Len(HTML_Data))
-'		DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "<br/>") - 1)
-'		.Sheets(SheetName).Range("E" & Day).Value = DataString
-'		Day = Day + 1
-'
-'		If InStr(HTML_Data, "<b>Humidity:</b>") > 0 Then
-'		GoTo next_string:
-'
-'		'This If statement extracts the Wind Chill data when it exists
-'		ElseIf InStr(HTML_Data, "<b>Wind Chill:</b>") > 0 Then
-'		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<b>Wind Chill:</b>") + 19, Len(HTML_Data))
-'		DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "<br/>") - 1)
-'		.Sheets(SheetName).Range("B" & Day - 2).Value = DataString
-'		'Day = Day + 1
-'
-'		Else
-'		.Sheets(SheetName).Range("B" & Day - 2).Value = "N/A"
-'		'Day = Day + 1
-'		End If
-'
-'		Day = Day - 1
-'
-'		'Isolates the Dewpoint data
-'		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<b>Dewpoint:</b>") + 17, Len(HTML_Data))
-'		DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "<br/>") - 8)
-'		.Sheets(SheetName).Range("H" & Day - 2).Value = DataString
-'		'Day = Day + 1
-'
-'		'Isolates the Wind data
-'		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<b>Wind:</b>") + 13, Len(HTML_Data))
-'		DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "<br/>") - 1)
-'		.Sheets(SheetName).Range("H" & Day - 1).Value = DataString
-'		'Day = Day + 1
-'
-'		'Isolates the Air Quality data
-'		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "</b>") + 5, Len(HTML_Data))
-'		DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "<br/>") - 2)
-'		.Sheets(SheetName).Range("B" & Day).Value = DataString
-'
-		Day = 112
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
 
 		''''''''''Extracts the Long Term Forecast'''''''''''''
 		''''''''''''''''''''''''''''''''''''''''''''''''''''''
-		nextLT_row:
-		'Isolates the 7 day forecast day.
-		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<title>") + 7, Len(HTML_Data))
-		DataString = Mid(HTML_Data, 1, InStr(HTML_Data, ":") - 0)
-		.Sheets(SheetName).Range("A" & Day).Value = DataString
-		'Isolates the 7 day forecast data.
-		'Chr(34) returns a double quotation mark (") and is used to prevent runtime errors.
-		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<summary type=" & Chr(34) & "html" & Chr(34) & ">") + 21, Len(HTML_Data))
-		DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "Forecast issued") - 1)
-		.Sheets(SheetName).Range("B" & Day).Value = DataString
-		Day = Day + 1
-		'This 'If' loop repeates the code from the 'next_LTrow:' until the entire long term forecast is extracted.
-		If InStr(HTML_Data, "<summary type=" & Chr(34) & "html" & Chr(34) & ">") > 0 Then GoTo nextLT_row:
+
+		For i = 1 to 13
+			Day = DayOffset + i
+
+			'Isolates the 7 day forecast day.
+			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<title>") + 7, Len(HTML_Data))
+			DataString = Mid(HTML_Data, 1, InStr(HTML_Data, ":"))
+			.Sheets(SheetName).Range("A" & Day).Value = DataString
+			'Isolates the 7 day forecast data.
+			'Chr(34) returns a double quotation mark (") and is used to prevent runtime errors.
+			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<summary type=" & Chr(34) & "html" & Chr(34) & ">") + 21, Len(HTML_Data))
+			DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "Forecast issued") - 1)
+			.Sheets(SheetName).Range("B" & Day).Value = DataString
+		next i
 
 		'Isolates the Long Term Forecast time issued.
 		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "Forecast") + 0, Len(HTML_Data))
 		DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "</summary>") - 1)
-		.Sheets(SheetName).Range("A" & Day - 14).Value = DataString
+		.Sheets(SheetName).Range("A" & DayOffset).Value = DataString
 
 		'Once the 7th day's forecast is loaded, the xmlhttp is set to 'Nothing' to prevent caching and the module closes.
 		Set xmlhttp = Nothing
