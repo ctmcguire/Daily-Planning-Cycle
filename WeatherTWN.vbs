@@ -27,69 +27,24 @@ Sub TWNWeatherScraper(SheetName As String)
 	Dim i As Integer
 	Dim j As Integer
 
-	'The Data, OffSet, and Column arrays are used to store values that are needed during the nested loops.  Short is for short-term and Long is for long-term
-	Dim ShortData(6) As String 'Data stores the name of the data being retrieved; ShortData does this for the short-term forecast data
-	Dim ShortOffSet(6) As Integer 'OffSet stores the offset between the beginning of the data's name and the beginning of the data itself; ShortOffSet does this for the short-term forecast data
-	Dim ShortColumn(6) As String 'Column stores the column of the cell the retrieved data will be stored in; ShortColumn does this for the short-term forecast data
-
-	Dim LongData(6) As String 'Same as ShortData, only for long-term forecast data
-	Dim LongOffSet(6) As Integer 'Same as ShortOffSet, only for long-term forecast data
-	Dim LongColumn(6) As String 'Same as ShortColumn, only for long-term forecast data
+	'The Data and Column arrays are used to store values that are needed during the nested loops
+	Dim Data(6) As String 'Data stores the name of the data being retrieved
+	Dim Column(6) As String 'Column stores the column of the cell the retrieved data will be stored in (although for current forcast values it stores the actual cell)
 
 	'The With statement is used to ensure the macro does not modify other workbooks that may be open.
 	With ThisWorkbook
-		Day = 88
+		'Initialize Data and Column arrays for the current forecast values
+		Data(0) = "temperature_c"
+		Data(1) = "feelsLike_c"
+		Data(2) = "windDirection" '*
+		Data(3) = "windGustSpeed_kmh"
+		Data(4) = "name_en"
 
-		'Initialize short-term array values
-		ShortData(0) = "temperature_c"
-		ShortData(1) = "feelsLike_c"
-		ShortData(2) = "pop_percent"
-		ShortData(3) = "windDirection" '*
-		ShortData(4) = "windGustSpeed_kmh"
-		ShortData(5) = Chr(34) & "rain" & Chr(34)
-		ShortData(6) = Chr(34) & "snow" & Chr(34)
-
-		ShortOffSet(0) = 15
-		ShortOffSet(1) = 13
-		ShortOffSet(2) = 13
-		ShortOffSet(3) = 16
-		ShortOffSet(4) = 19
-		ShortOffSet(5) = 7
-		ShortOffSet(6) = 7
-
-		ShortColumn(0) = "C"
-		ShortColumn(1) = "D"
-		ShortColumn(2) = "E"
-		ShortColumn(3) = "F"
-		ShortColumn(4) = "G"
-		ShortColumn(5) = "H"
-		ShortColumn(6) = "I"
-
-
-		'Initialize long-term array values
-		LongData(0) = "temperatureMin_c"
-		LongData(1) = "temperatureMax_c"
-		LongData(2) = "feelsLike_c"
-		LongData(3) = "windDirection"
-		LongData(4) = "popDay_percent"
-		LongData(5) = Chr(34) & "rain" & Chr(34)
-		LongData(6) = Chr(34) & "snow" & Chr(34)
-
-		LongOffSet(0) = 18
-		LongOffSet(1) = 18
-		LongOffSet(2) = 13
-		LongOffSet(3) = 16
-		LongOffSet(4) = 16
-		LongOffSet(5) = 7
-		LongOffSet(6) = 7
-
-		LongColumn(0) = "D"
-		LongColumn(1) = "C"
-		LongColumn(2) = "E"
-		LongColumn(3) = "F"
-		LongColumn(4) = "G"
-		LongColumn(5) = "H"
-		LongColumn(6) = "I"
+		Column(0) = "B89"
+		Column(1) = "B90"
+		Column(2) = "E89"
+		Column(3) = "E90"
+		Column(4) = "B88"
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
 
@@ -125,39 +80,40 @@ Sub TWNWeatherScraper(SheetName As String)
 		'The SheetName variable is recieved from the datepicker in the 'Update' form
 		.Sheets(SheetName).Range("C88").Value = DPCTimeStamp
 
-		'Isolates the Current Temperature
-		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "temperature_c") + 15, Len(HTML_Data))
-		'Chr(34) returns double quotation marks (") and is used to prevent runtime errors.
-		DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "," & Chr(34)) - 1)
-		.Sheets(SheetName).Range("B89").Value = DataString
+		For j = 0 to 4 'We aren't using the whole array, so this isn't UBound(Data)
+			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, Chr(34) & Data(j) & Chr(34) & ":") + Len(Chr(34) & Data(j) & Chr(34) & ":"), Len(HTML_Data))
+			DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "," & Chr(34)) - 1)
+			DataString = Replace(DataString, Chr(34), "") 'Remove any quotation marks from the DataString
 
-		'Isolates the 'Feels like' Temperature
-		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "feelsLike_c") + 13, Len(HTML_Data))
-		DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "," & Chr(34)) - 1)
-		.Sheets(SheetName).Range("B90").Value = DataString
+			If j = 2 Then
+				DataString = Replace(DataString, "O", "W") 'Translates the wind direction to english
 
-		'Isolates the Wind Direction
-		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "windDirection") + 16, Len(HTML_Data))
-		DataString = Mid(HTML_Data, 1, InStr(HTML_Data, Chr(34) & ",") - 1)
-		'Translates the wind direction to english
-		DataString = Replace(DataString, "O", "W")
-		'Isolates the Wind Speed
-		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "windSpeed_kmh") + 15, Len(HTML_Data))
-		'Merges the wind direction and speed into one string.
-		DataString = DataString + " " + Mid(HTML_Data, 1, InStr(HTML_Data, "," & Chr(34)) - 1) + " km/h"
-		.Sheets(SheetName).Range("E89").Value = DataString
+				'Isolates the Wind Speed
+				HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "windSpeed_kmh") + 15, Len(HTML_Data))
+				DataString = DataString + " " + Mid(HTML_Data, 1, InStr(HTML_Data, "," & Chr(34)) - 1) + " km/h"
+			ElseIf j = 3 Then
+				DataString = DataString + " km/h"
+			End If
 
-		'Isolates the Wind gusts
-		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "windGustSpeed_kmh") + 19, Len(HTML_Data))
-		DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "," & Chr(34)) - 1)
-		.Sheets(SheetName).Range("E90").Value = DataString + " km/h"
-
-		'Isolates the current conditions location
-		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "name_en") + 10, Len(HTML_Data))
-		DataString = Mid(HTML_Data, 1, InStr(HTML_Data, Chr(34) & ",") - 1)
-		.Sheets(SheetName).Range("B88").Value = DataString
+			.Sheets(SheetName).Range(Column(j)).Value = DataString
+		next j
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
+
+		'Initialize Data and Column arrays for the short-term forecast values (Some values will be unchanged)
+		Data(2) = "pop_percent"
+		Data(3) = "windDirection" '*
+		Data(4) = "windGustSpeed_kmh"
+		Data(5) = "rain"
+		Data(6) = "snow"
+
+		Column(0) = "C"
+		Column(1) = "D"
+		Column(2) = "E"
+		Column(3) = "F"
+		Column(4) = "G"
+		Column(5) = "H"
+		Column(6) = "I"
 
 		''''''''''Extracts the Short Term Forecast'''''''''''''
 		'''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -177,14 +133,14 @@ Sub TWNWeatherScraper(SheetName As String)
 			DPCTimeStamp = (WebTimeStamp / (86400000) + 25569)
 			.Sheets(SheetName).Range("A" & Day).Value = DPCTimeStamp
 
-			For j = 0 to UBound(ShortData)
-				HTML_Data = Mid(HTML_Data, InStr(HTML_Data, ShortData(j)) + ShortOffSet(j), Len(HTML_Data))
+			For j = 0 to UBound(Data)
+				HTML_Data = Mid(HTML_Data, InStr(HTML_Data, Chr(34) & Data(j) & Chr(34) & ":") + Len(Chr(34) & Data(j) & Chr(34) & ":"), Len(HTML_Data))
 				DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "," & Chr(34)) - 1)
+				DataString = Replace(DataString, Chr(34), "") 'Remove any quotation marks from the DataString
 
 				If j = 2 Then
 					DataString = DataString + "%"
 				ElseIf j = 3 Then
-					DataString = Mid(HTML_Data, 1, InStr(HTML_Data, Chr(34) & ",") - 1)
 					DataString = Replace(DataString, "O", "W") 'Translates the wind direction to english
 
 					'Isolates the Wind Speed
@@ -194,10 +150,18 @@ Sub TWNWeatherScraper(SheetName As String)
 					DataString = DataString + " km/h"
 				End If
 
-				.Sheets(SheetName).Range(ShortColumn(j) & Day).Value = DataString
-
+				.Sheets(SheetName).Range(Column(j) & Day).Value = DataString
 			next j
 		next i
+
+		'Initialize Data and Column arrays for the long-term forecast values (Some values will be unchanged)
+		Data(0) = "temperatureMin_c"
+		Data(1) = "temperatureMax_c"
+		Data(2) = "feelsLike_c"
+		Data(4) = "popDay_percent"
+
+		Column(0) = "D"
+		Column(1) = "C"
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
 
@@ -218,12 +182,12 @@ Sub TWNWeatherScraper(SheetName As String)
 			DPCTimeStamp = (WebTimeStamp / (86400000) + 25569)
 			.Sheets(SheetName).Range("A" & Day).Value = DPCTimeStamp
 
-			For j = 0 to UBound(LongData)
-				HTML_Data = Mid(HTML_Data, InStr(HTML_Data, LongData(j)) + LongOffSet(j), Len(HTML_Data))
+			For j = 0 to UBound(Data)
+				HTML_Data = Mid(HTML_Data, InStr(HTML_Data, Chr(34) & Data(j) & Chr(34) & ":") + Len(Chr(34) & Data(j) & Chr(34) & ":"), Len(HTML_Data))
 				DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "," & Chr(34)) - 1)
+				DataString = Replace(DataString, Chr(34), "") 'Remove any quotation marks from the DataString
 
 				If j = 3 Then
-					DataString = Mid(HTML_Data, 1, InStr(HTML_Data, Chr(34) & ",") - 1)
 					DataString = Replace(DataString, "O", "W") 'Translates the wind direction to english
 
 					'Isolates the Wind Speed
@@ -233,8 +197,7 @@ Sub TWNWeatherScraper(SheetName As String)
 					DataString = DataString + "%"
 				End If
 
-				.Sheets(SheetName).Range(LongColumn(j) & Day).Value = DataString
-
+				.Sheets(SheetName).Range(Column(j) & Day).Value = DataString
 			next j
 		next i
 
