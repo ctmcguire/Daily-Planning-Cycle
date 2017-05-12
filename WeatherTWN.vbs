@@ -27,18 +27,20 @@ Sub TWNWeatherScraper(SheetName As String)
 	Dim i As Integer
 	Dim j As Integer
 
-	Dim ShortData(6) As String
-	Dim ShortOffSet(6) As Integer
-	Dim ShortCell(6) As String
+	'The Data, OffSet, and Column arrays are used to store values that are needed during the nested loops.  Short is for short-term and Long is for long-term
+	Dim ShortData(6) As String 'Data stores the name of the data being retrieved; ShortData does this for the short-term forecast data
+	Dim ShortOffSet(6) As Integer 'OffSet stores the offset between the beginning of the data's name and the beginning of the data itself; ShortOffSet does this for the short-term forecast data
+	Dim ShortColumn(6) As String 'Column stores the column of the cell the retrieved data will be stored in; ShortColumn does this for the short-term forecast data
 
-	Dim LongData(6) As String
-	Dim LongOffSet(6) As Integer
-	Dim LongCell(6) As String
+	Dim LongData(6) As String 'Same as ShortData, only for long-term forecast data
+	Dim LongOffSet(6) As Integer 'Same as ShortOffSet, only for long-term forecast data
+	Dim LongColumn(6) As String 'Same as ShortColumn, only for long-term forecast data
 
 	'The With statement is used to ensure the macro does not modify other workbooks that may be open.
 	With ThisWorkbook
 		Day = 88
 
+		'Initialize short-term array values
 		ShortData(0) = "temperature_c"
 		ShortData(1) = "feelsLike_c"
 		ShortData(2) = "pop_percent"
@@ -55,15 +57,16 @@ Sub TWNWeatherScraper(SheetName As String)
 		ShortOffSet(5) = 7
 		ShortOffSet(6) = 7
 
-		ShortCell(0) = "C"
-		ShortCell(1) = "D"
-		ShortCell(2) = "E"
-		ShortCell(3) = "F"
-		ShortCell(4) = "G"
-		ShortCell(5) = "H"
-		ShortCell(6) = "I"
+		ShortColumn(0) = "C"
+		ShortColumn(1) = "D"
+		ShortColumn(2) = "E"
+		ShortColumn(3) = "F"
+		ShortColumn(4) = "G"
+		ShortColumn(5) = "H"
+		ShortColumn(6) = "I"
 
 
+		'Initialize long-term array values
 		LongData(0) = "temperatureMin_c"
 		LongData(1) = "temperatureMax_c"
 		LongData(2) = "feelsLike_c"
@@ -80,13 +83,13 @@ Sub TWNWeatherScraper(SheetName As String)
 		LongOffSet(5) = 7
 		LongOffSet(6) = 7
 
-		LongCell(0) = "D"
-		LongCell(1) = "C"
-		LongCell(2) = "E"
-		LongCell(3) = "F"
-		LongCell(4) = "G"
-		LongCell(5) = "H"
-		LongCell(6) = "I"
+		LongColumn(0) = "D"
+		LongColumn(1) = "C"
+		LongColumn(2) = "E"
+		LongColumn(3) = "F"
+		LongColumn(4) = "G"
+		LongColumn(5) = "H"
+		LongColumn(6) = "I"
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
 
@@ -191,7 +194,7 @@ Sub TWNWeatherScraper(SheetName As String)
 					DataString = DataString + " km/h"
 				End If
 
-				.Sheets(SheetName).Range(ShortCell(j) & Day).Value = DataString
+				.Sheets(SheetName).Range(ShortColumn(j) & Day).Value = DataString
 
 			next j
 		next i
@@ -230,7 +233,7 @@ Sub TWNWeatherScraper(SheetName As String)
 					DataString = DataString + "%"
 				End If
 
-				.Sheets(SheetName).Range(LongCell(j) & Day).Value = DataString
+				.Sheets(SheetName).Range(LongColumn(j) & Day).Value = DataString
 
 			next j
 		next i
