@@ -24,6 +24,13 @@ Sub UpdateDPC()
 	'Instructions to install the Date Picker control can be found by right clicking on the 'DatePicker' form and selecting 'View Code'.
 	DatePicker.Show
 
+'Set everything back to the way it was before starting the macro and quietly exit if the datepicker was closed with the close button
+If InputDay = "cancel" Then
+	Application.StatusBar = False
+	Application.Calculation = xlCalculationAutomatic
+	Application.ScreenUpdating = True
+	Exit Sub
+End If
 	Dim Answer As Integer
 
 	'This 'For' loop checks that the a sheet for the requested date does not already exist.
