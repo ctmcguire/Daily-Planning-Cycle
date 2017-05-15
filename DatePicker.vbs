@@ -34,22 +34,22 @@
 
 
 Private Sub CmdButton_Submit_Click()
-'-----------------------------------------------------------------------------------------------------------------------------'
-'Please send any questions or feedback to cmcguire@mvc.on.ca
-'-----------------------------------------------------------------------------------------------------------------------------'
-'The date submitted through the Date Picker control is used to assign values to the public variable InputDate that is defined in the DPCupdate module.
-'The format function is used to reformat the submitted date for readability in Excel.
-InputDay = Format(DatePicker.DTPicker1.Value, "mmm d")
-InputNumber = DatePicker.DTPicker1.Value + TimeSerial(6, 0, 0)
+	'-----------------------------------------------------------------------------------------------------------------------------'
+	'Please send any questions or feedback to cmcguire@mvc.on.ca
+	'-----------------------------------------------------------------------------------------------------------------------------'
+	'The date submitted through the Date Picker control is used to assign values to the public variable InputDate that is defined in the DPCupdate module.
+	'The format function is used to reformat the submitted date for readability in Excel.
+	InputDay = Format(DatePicker.DTPicker1.Value, "mmm d")
+	InputNumber = DatePicker.DTPicker1.Value + TimeSerial(6, 0, 0)
 
-'The form is unloaded to free up memory.
-Unload Me
+	'The form is unloaded to free up memory.
+	Unload Me
 
 End Sub
 
 'This Private Subroutine sets the Date Picker to the current date to improve the user experience.
 Private Sub UserForm_Initialize()
-DatePicker.DTPicker1.Value = Date
+	DatePicker.DTPicker1.Value = Date
 End Sub
 
 
