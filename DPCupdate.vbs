@@ -41,6 +41,10 @@ Sub UpdateDPC()
 			If Answer = vbYes Then
 				DPCsheet.Unprotect
 			Else
+				'The previously adjusted modes are returned to their default state.
+				Application.StatusBar = False
+				Application.Calculation = xlCalculationAutomatic
+				Application.ScreenUpdating = True
 				Exit Sub
 			End If
 		End If

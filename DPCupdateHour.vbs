@@ -37,6 +37,10 @@ Sub UpdateHourDPC()
 		If DPCsheet.name = InputTime Then
 			'If a sheet with the requested date already exists, the subroutine exits so that previous data is not overwritten.
 			MsgBox "A sheet for '" & InputHour & "' already exists."
+			'The previously adjusted modes are returned to their default state.
+			Application.StatusBar = False
+			Application.Calculation = xlCalculationAutomatic
+			Application.ScreenUpdating = True
 			Exit Sub
 		End If
 	Next
