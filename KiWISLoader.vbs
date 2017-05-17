@@ -49,16 +49,13 @@ PrevDate = "&from=" & PrevDate & "T00:00:00.000-05:00&to=" & PrevDate & "T23:59:
 
 Dim qt As QueryTable
 
-'This _should_ remove all the old connections.  In Theory.  Maybe.
-For Each qt In Sheets("Raw1").QueryTables
-	qt.Delete
-Next
+
 
 'The previously loaded data in 'Raw1' is deleted to make room for the new data.
 ThisWorkbook.Sheets("Raw1").Range("A2:T500").ClearContents
 
 'The base URL address is assigned to URL1.
-URL1 = "URL;http://waterdata.quinteconservation.ca/KiWIS/KiWIS?service=kisters&type=queryServices&request=getTimeseriesValues&datasource=0&format=html&metadata=true&md_returnfields=station_name,parametertype_name&dateformat=yyyy-MM-dd%27T%27HH:mm:ss&timeseriesgroup_id="
+URL1 = "http://waterdata.quinteconservation.ca/KiWIS/KiWIS?service=kisters&type=queryServices&request=getTimeseriesValues&datasource=0&format=html&metadata=true&md_returnfields=station_name,parametertype_name&dateformat=yyyy-MM-dd%27T%27HH:mm:ss&timeseriesgroup_id="
 
 'A loop is used to load the KiWIS tables into Raw1.
 'The 'i' counter navigates the TimeSeriesID array.
@@ -74,7 +71,7 @@ For i = 0 To UBound(TimeSeriesID)
         URL2 = URL1 & TimeSeriesID(i) & Left(KiWISDate, 16) & "T" & Hour(InputDate) - 6 & ":00:00.000-05:00&to=" & Right(Left(KiWISDate, 16), 10) & "T" & Hour(InputDate) & ":00:00.000-05:00"
     End If
     
-    With ThisWorkbook.Sheets("Raw1").QueryTables.Add(Connection:=URL2, Destination:=ThisWorkbook.Sheets("Raw1").Cells(2, 3 * i + 1))
+    With ThisWorkbook.Sheets("Raw1").QueryTables.Add(Connection:="URL;" & URL2, Destination:=ThisWorkbook.Sheets("Raw1").Cells(2, 3 * i + 1))
         .BackgroundQuery = True
         .TablesOnlyFromHTML = True
         .Refresh BackgroundQuery:=False
@@ -83,7 +80,9 @@ For i = 0 To UBound(TimeSeriesID)
 
 Next i
 
+'This removes all of the connections so as to not bog down the worksheet and/or excel file
+For Each qt In Sheets("Raw1").QueryTables
+	qt.Delete
+Next
+
 End Sub
-
-
-
