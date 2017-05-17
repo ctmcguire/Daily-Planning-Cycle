@@ -70,7 +70,6 @@ Sub AccuWeatherScraper(SheetName As String)
 		DataString = Mid(HTML_Data, 1, InStr(HTML_Data, ",") - 1) + " 2016 AccuWeather, Inc. All Rights Reserved."
 		'The SheetName variable is recieved from the datepicker in the 'Update' form
 		.Sheets(SheetName).Range("A" & Day).Value = DataString
-'		Day = Day + 1
 
 		'Cuts the extra HTML code.
 		If InStr(HTML_Data, "<!-- /.feed-controls -->") > 0 Then
@@ -80,11 +79,7 @@ Sub AccuWeatherScraper(SheetName As String)
 		'-----------------------------------------------------------------------------------------------------------------------------'
 
 		''''''''''Extracts the 5 Day Forecasted Highs and Lows'''''''''''''
-		'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
-
-
-		'next_temp:
+		'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 		'This for loop ensures the entire 5 day forecast is extracted before proceeding.
 		For i = 1 to 5
 			Day = DayOffset + i
@@ -112,18 +107,13 @@ Sub AccuWeatherScraper(SheetName As String)
 			DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "</span>") - 1)
 			.Sheets(SheetName).Range("B" & Day).Value = DataString
 		next i
-
-'		Day = Day + 1
-
-'		If InStr(HTML_Data, "<span class=" & Chr(34) & "small-temp" & Chr(34) & ">") > 0 Then GoTo next_temp:
-
+		
 		'-----------------------------------------------------------------------------------------------------------------------------'
 
 		Day = DayOffset
 
 		'Adds a VBA time stamp to the weather since time is not published on the webpage.
 		.Sheets(SheetName).Range("B" & Day).Value = Format(DateTime.Now, "yyyy-MM-d hh:mm:ss")
-'		Day = Day + 1
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
 
@@ -131,9 +121,6 @@ Sub AccuWeatherScraper(SheetName As String)
 		'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 		'The i variable navigates to the corresponding forecast day.
-		'i = 1
-
-		'next_row: 'couldn't we use a for loop for this?
 		For i = 1 to 5
 			Day = DayOffset + i
 
@@ -193,12 +180,7 @@ Sub AccuWeatherScraper(SheetName As String)
 			NightRain = NightRain + Val(Mid(HTML_Data, 1, InStr(HTML_Data, " mm")))
 			.Sheets(SheetName).Range("I" & Day).Value = NightRain
 
-			'Day = Day + 1
-			'i = i + 1
 			Set xmlhttp = Nothing
-
-			'Once the 5 day forecast data has been extracted, the module closes.
-			'If i > 5 Then Exit Sub
 
 			'Your Location's link can be found by searching for your location at 'accuweather.com' and clicking 'Extended'.
 			URL = "http://www.accuweather.com/en/ca/carleton-place/k7c/daily-weather-forecast/55438?day=" & (i+1)
@@ -217,9 +199,8 @@ Sub AccuWeatherScraper(SheetName As String)
 
 			'Cuts the HTML code to the precipitation
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<!-- /.feed-tabs -->"), Len(HTML_Data))
-
-			'If InStr(HTML_Data, "<strong class=" & Chr(34) & "temp" & Chr(34) & ">") > 0 Then
-		next i'GoTo next_row:
-
+		next i
+		
+		Set xmlhttp = Nothing
 	End With
 End Sub

@@ -20,7 +20,7 @@ Sub UpdateHourDPC()
 	'Sheet calculations are turned off to speed up the processing time.
 	Application.Calculation = xlCalculationManual
 
-	InputTime = "cancel" 'Unless the user closes the HourPicker window with the close button, this value will get changed
+	InputTime = "cancel" 'If no time is chosen, this variable is assigned to exit the macro.
 
 	'The Date Picker form is shown and the user inputs a date.
 	'Instructions to install the Date Picker control can be found by right clicking on the 'DatePicker' form and selecting 'View Code'.
@@ -33,21 +33,29 @@ Sub UpdateHourDPC()
 		Application.ScreenUpdating = True
 		Exit Sub
 	End If
+	Dim Answer As Integer
 
 	'This 'For' loop checks that the a sheet for the requested date does not already exist.
 	For Each DPCsheet In ThisWorkbook.Worksheets
-		If DPCsheet.name = InputTime Then
+		If DPCsheet.name = InputDay Then
 			'If a sheet with the requested date already exists, the subroutine exits so that previous data is not overwritten.
-			MsgBox "A sheet for '" & InputHour & "' already exists."
-			'The previously adjusted modes are returned to their default state.
-			Application.StatusBar = False
-			Application.Calculation = xlCalculationAutomatic
-			Application.ScreenUpdating = True
-			Exit Sub
+			Answer = MsgBox("A sheet for '" & InputDay & "' already exists.  Do you want to fill the empty cells?", vbYesNo, "Sheet Already Exists")
+			If Answer = vbYes Then
+				DPCsheet.Unprotect
+			Else
+				'The previously adjusted modes are returned to their default state.
+				Application.StatusBar = False
+				Application.Calculation = xlCalculationAutomatic
+				Application.ScreenUpdating = True
+				Exit Sub
+			End If
 		End If
 	Next
+	
 	'----------------------------------------------------------------------------------------------------------------------------------------------'
 	'The 'AddSheet' module creates a new sheet in the workbook, names it after the requested date, and pastes the template from 'Raw2'.
+	'AddSheet only runs if a sheet for the requested day does not exist.
+	If Answer = 0 Then Call AddSheet.CreateSheet(InputDay, InputNumber)
 	Call AddSheet.CreateSheet(InputTime, InputHour)
 	'The KiWISLoader module loads the KiWIS tables to the sheet 'Raw1'.
 	Call KiWISLoader.KiWIS_Import(InputHour)
@@ -55,10 +63,12 @@ Sub UpdateHourDPC()
 	Call KiWIS2Excel.Raw1Import(InputTime)
 
 	'The Weather... modules scrape weather data from AccuWeather, Environment Canada and The Weather Network and pastes it into the new sheet.
-	Call WeatherAccu.AccuWeatherScraper(InputTime)
-	Call WeatherEC.ECWeatherScraper(InputTime)
-	Call WeatherTWN.TWNWeatherScraper(InputTime)
-
+	If Answer = 0 Then	
+		Call WeatherAccu.AccuWeatherScraper(InputTime)
+		Call WeatherEC.ECWeatherScraper(InputTime)
+		Call WeatherTWN.TWNWeatherScraper(InputTime)
+	End if
+	
 	'The DataProtector module locks cells for editing and saves a backup of the daily planning cycle to the local desktop and the Water Management Files folder.
 	Call DataProtector.LockCells(InputTime, InputHour)
 
@@ -70,7 +80,7 @@ Sub UpdateHourDPC()
 		.Range("E16").Select
 	End With
 
-	MsgBox "The requested sheet for " & InputTime & " has loaded."
+	MsgBox "The data for " & InputTime & " has loaded."
 
 	'The previously adjusted modes are returned to their default state.
 	Application.StatusBar = False

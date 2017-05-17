@@ -41,7 +41,7 @@ Dim LevelGaugeNames(LevelGaugeCount) As String
 'The cdpa and cdpb variables are used to calculate the current day precipitation from 0 to 6 am.
 Dim cdpa As Integer
 Dim cdpb As Integer
-'The variables 'i' and 'z' are used as counters in the loop.
+'The variables 'i', 'j' and 'z' are used as counters in the loop.
 Dim i As Integer
 Dim j As Integer
 Dim z As Integer
@@ -131,43 +131,43 @@ LevelGaugeExceptions(16, NO_TEMP) = True
 'The With statement is used to ensure the macro does not modify other workbooks that may be open.
 With ThisWorkbook
 
-'The 'z' variable is used to navigate the rows of the loaded sheet.
-'The 'i' counter navigates the GaugeName array.
-For i = 0 To UBound(FlowGaugeNames)
-	'This for loop moves the Water Surveys of Canada (WSC) data from Raw1 to the loaded sheet.
-	'The WSC sites measure the level, flow and precipitation.
-	z = FlowOffset + i
+	'The 'z' variable is used to navigate the rows of the loaded sheet.
+	'The 'i' counter navigates the GaugeName array.
+	For i = 0 To UBound(FlowGaugeNames)
+		'This for loop moves the Water Surveys of Canada (WSC) data from Raw1 to the loaded sheet.
+		'The WSC sites measure the level, flow and precipitation.
+		z = FlowOffset + i
 
-	If Not FlowGaugeExceptions(i, MANUAL) Then
-		'Inserting all the battery levels of stream guages'
-		If IsEmpty(.Sheets(SheetName).Cells(z, 14)) = True Then _
-			.Sheets(SheetName).Cells(z, 14).Value = Application.WorksheetFunction.Index(.Sheets("Raw1").Range("T1:T350"), (Application.WorksheetFunction.Match(FlowGaugeNames(i), .Sheets("Raw1").Range("T1:T350"), 0) + 5))
-		'The 6:00 am level data is extracted from Column B in Raw1.
-		'Note that the .Range("B1:B350") will need to be extended if more time series are added to a group.
-		'The Match function finds the correct time series in the column and the Index function returns the value.
-		If IsEmpty(.Sheets(SheetName).Cells(z, 4)) = True Then _
-			.Sheets(SheetName).Cells(z, 4).Value = Application.WorksheetFunction.Index(.Sheets("Raw1").Range("B1:B500"), (Application.WorksheetFunction.Match(FlowGaugeNames(i), .Sheets("Raw1").Range("B1:B350"), 0) + 5))
-		'The 6:00 am flow data is extracted from Column H in Raw1.
-		If IsEmpty(.Sheets(SheetName).Cells(z, 5)) = True Then _
-			.Sheets(SheetName).Cells(z, 5).Value = Application.WorksheetFunction.Index(.Sheets("Raw1").Range("H1:H500"), (Application.WorksheetFunction.Match(FlowGaugeNames(i), .Sheets("Raw1").Range("H1:H350"), 0) + 5))
-		'The previous day's precipitation data is extracted from Column Q in Raw1.
-		If IsEmpty(.Sheets(SheetName).Cells(z, 11)) = True And Not FlowGaugeExceptions(i, NO_RAIN) Then _
-			.Sheets(SheetName).Cells(z, 11).Value = Application.WorksheetFunction.Index(.Sheets("Raw1").Range("E1:E500"), (Application.WorksheetFunction.Match(FlowGaugeNames(i), .Sheets("Raw1").Range("E1:E350"), 0) + 5))
-		'This If statement determines if the precipitation gauge has output a complete dataset between 00-06:00 am.
-		If Not FlowGaugeExceptions(i, NO_RAIN) Then
-			If (.Sheets("Raw1").Range("Q" & (Application.WorksheetFunction.Match(FlowGaugeNames(i), .Sheets("Raw1").Range("Q1:Q500"), 0) + 2))) = 7 Then
-				'If the dataset is complete, the 00-06:00 am precipitation is summed and extracted.
-				cdpa = (Application.WorksheetFunction.Match(FlowGaugeNames(i), .Sheets("Raw1").Range("Q1:Q500"), 0) + 5)
-				cdpb = cdpa + 12
-				If IsEmpty(.Sheets(SheetName).Cells(z, 12)) = True Then _
-					.Sheets(SheetName).Cells(z, 12).Value = Application.WorksheetFunction.Sum(.Sheets("Raw1").Range("Q" & cdpa, "Q" & cdpb))
+		If Not FlowGaugeExceptions(i, MANUAL) Then
+			'Inserting all the battery levels of stream guages'
+			If IsEmpty(.Sheets(SheetName).Cells(z, 14)) = True Then _
+				.Sheets(SheetName).Cells(z, 14).Value = Application.WorksheetFunction.Index(.Sheets("Raw1").Range("T1:T350"), (Application.WorksheetFunction.Match(FlowGaugeNames(i), .Sheets("Raw1").Range("T1:T350"), 0) + 5))
+			'The 6:00 am level data is extracted from Column B in Raw1.
+			'Note that the .Range("B1:B350") will need to be extended if more time series are added to a group.
+			'The Match function finds the correct time series in the column and the Index function returns the value.
+			If IsEmpty(.Sheets(SheetName).Cells(z, 4)) = True Then _
+				.Sheets(SheetName).Cells(z, 4).Value = Application.WorksheetFunction.Index(.Sheets("Raw1").Range("B1:B500"), (Application.WorksheetFunction.Match(FlowGaugeNames(i), .Sheets("Raw1").Range("B1:B350"), 0) + 5))
+			'The 6:00 am flow data is extracted from Column H in Raw1.
+			If IsEmpty(.Sheets(SheetName).Cells(z, 5)) = True Then _
+				.Sheets(SheetName).Cells(z, 5).Value = Application.WorksheetFunction.Index(.Sheets("Raw1").Range("H1:H500"), (Application.WorksheetFunction.Match(FlowGaugeNames(i), .Sheets("Raw1").Range("H1:H350"), 0) + 5))
+			'The previous day's precipitation data is extracted from Column Q in Raw1.
+			If IsEmpty(.Sheets(SheetName).Cells(z, 11)) = True And Not FlowGaugeExceptions(i, NO_RAIN) Then _
+				.Sheets(SheetName).Cells(z, 11).Value = Application.WorksheetFunction.Index(.Sheets("Raw1").Range("E1:E500"), (Application.WorksheetFunction.Match(FlowGaugeNames(i), .Sheets("Raw1").Range("E1:E350"), 0) + 5))
+			'This If statement determines if the precipitation gauge has output a complete dataset between 00-06:00 am.
+			If Not FlowGaugeExceptions(i, NO_RAIN) Then
+				If (.Sheets("Raw1").Range("Q" & (Application.WorksheetFunction.Match(FlowGaugeNames(i), .Sheets("Raw1").Range("Q1:Q500"), 0) + 2))) = 7 Then
+					'If the dataset is complete, the 00-06:00 am precipitation is summed and extracted.
+					cdpa = (Application.WorksheetFunction.Match(FlowGaugeNames(i), .Sheets("Raw1").Range("Q1:Q500"), 0) + 5)
+					cdpb = cdpa + 12
+					If IsEmpty(.Sheets(SheetName).Cells(z, 12)) = True Then _
+						.Sheets(SheetName).Cells(z, 12).Value = Application.WorksheetFunction.Sum(.Sheets("Raw1").Range("Q" & cdpa, "Q" & cdpb))
+				End If
 			End If
 		End If
-	End If
-Next i
+	Next i
 
-'After the WSC Stream Gauge data is loaded the MVCA Lake data is loaded.
-For i = 0 To UBound(LevelGaugeNames)
+	'After the WSC Stream Gauge data is loaded the MVCA Lake data is loaded.
+	For i = 0 To UBound(LevelGaugeNames)
 	z = LevelOffset + i 'z should ideally be removed and replaced with an offset value that is added to i in the future
 
 	If Not LevelGaugeExceptions(i, SKIP_IT) Then
@@ -196,7 +196,7 @@ For i = 0 To UBound(LevelGaugeNames)
 		If IsEmpty(.Sheets(SheetName).Cells(z, 13)) = True And Not LevelGaugeExceptions(i, NO_TEMP) Then _
 			.Sheets(SheetName).Cells(z, 13).Value = Application.WorksheetFunction.Index(.Sheets("Raw1").Range("K1:K350"), (Application.WorksheetFunction.Match(LevelGaugeNames(i), .Sheets("Raw1").Range("K1:K350"), 0) + 5))
 	End If
-Next i
+	Next i
 
 End With
 End Sub

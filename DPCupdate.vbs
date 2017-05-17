@@ -20,7 +20,7 @@ Sub UpdateDPC()
 	'Sheet calculations are turned off to speed up the processing time.
 	Application.Calculation = xlCalculationManual
 
-	InputDay = "cancel" 'Unless the user closes the DatePicker window with the close button, this value will get changed
+	InputDay = "cancel" 'If no date is chosen, this variable is assigned to exit the macro.
 
 	'The Date Picker form is shown and the user inputs a date.
 	'Instructions to install the Date Picker control can be found by right clicking on the 'DatePicker' form and selecting 'View Code'.
@@ -39,7 +39,7 @@ Sub UpdateDPC()
 	For Each DPCsheet In ThisWorkbook.Worksheets
 		If DPCsheet.name = InputDay Then
 			'If a sheet with the requested date already exists, the subroutine exits so that previous data is not overwritten.
-			Answer = MsgBox("A sheet for '" & InputDay & "' already exists.  Do you want to fill empty cells?", vbYesNo, "Sheet Already Exists")
+			Answer = MsgBox("A sheet for '" & InputDay & "' already exists.  Do you want to fill the empty cells?", vbYesNo, "Sheet Already Exists")
 			If Answer = vbYes Then
 				DPCsheet.Unprotect
 			Else
@@ -55,6 +55,7 @@ Sub UpdateDPC()
 
 	'----------------------------------------------------------------------------------------------------------------------------------------------'
 	'The 'AddSheet' module creates a new sheet in the workbook, names it after the requested date, and pastes the template from 'Raw2'.
+	'AddSheet only runs if a sheet for the requested day does not exist.
 	If Answer = 0 Then Call AddSheet.CreateSheet(InputDay, InputNumber)
 	'The KiWISLoader module loads the KiWIS tables to the sheet 'Raw1'.
 	Call KiWISLoader.KiWIS_Import(InputNumber)
@@ -63,9 +64,9 @@ Sub UpdateDPC()
 
 	'The Weather... modules scrape weather data from AccuWeather, Environment Canada and The Weather Network and pastes it into the new sheet.
 	If Answer = 0 Then
-	Call WeatherAccu.AccuWeatherScraper(InputDay)
-	Call WeatherEC.ECWeatherScraper(InputDay)
-	Call WeatherTWN.TWNWeatherScraper(InputDay)
+		Call WeatherAccu.AccuWeatherScraper(InputDay)
+		Call WeatherEC.ECWeatherScraper(InputDay)
+		Call WeatherTWN.TWNWeatherScraper(InputDay)
 	End If
 
 	'The DataProtector module locks cells for editing and saves a backup of the daily planning cycle to the local desktop and the Water Management Files folder.
@@ -79,7 +80,7 @@ Sub UpdateDPC()
 		.Range("E16").Select
 	End With
 
-	MsgBox "The requested sheet for " & InputDay & " has loaded."
+	MsgBox "The data for " & InputDay & " has loaded."
 
 	'The previously adjusted modes are returned to their default state.
 	Application.StatusBar = False
