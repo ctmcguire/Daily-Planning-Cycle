@@ -47,12 +47,6 @@ Private Sub CmdButton_Submit_Click()
 
 End Sub
 
-'This Private Subroutine cancels out of the DPCUpdate when the close button is pressed
-Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
-	InputDay = "cancel"
-	Unload Me
-End Sub
-
 'This Private Subroutine sets the Date Picker to the current date to improve the user experience.
 Private Sub UserForm_Initialize()
 	DatePicker.DTPicker1.Value = Date

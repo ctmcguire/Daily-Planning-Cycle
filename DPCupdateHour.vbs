@@ -20,6 +20,8 @@ Sub UpdateHourDPC()
 	'Sheet calculations are turned off to speed up the processing time.
 	Application.Calculation = xlCalculationManual
 
+	InputTime = "cancel" 'Unless the user closes the HourPicker window with the close button, this value will get changed
+
 	'The Date Picker form is shown and the user inputs a date.
 	'Instructions to install the Date Picker control can be found by right clicking on the 'DatePicker' form and selecting 'View Code'.
 	HourPicker.Show

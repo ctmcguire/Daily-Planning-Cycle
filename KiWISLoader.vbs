@@ -47,6 +47,13 @@ KiWISDate = "&from=" & KiWISDate & "T" & Hour(InputDate) - 1 & ":59:55.000-05:00
 PrevDate = Format(DateAdd("d", -1, InputDate), "yyyy-mm-d")
 PrevDate = "&from=" & PrevDate & "T00:00:00.000-05:00&to=" & PrevDate & "T23:59:59.000-05:00"
 
+Dim qt As QueryTable
+
+'This _should_ remove all the old connections.  In Theory.  Maybe.
+For Each qt In Sheets("Raw1").QueryTables
+	qt.Delete
+Next
+
 'The previously loaded data in 'Raw1' is deleted to make room for the new data.
 ThisWorkbook.Sheets("Raw1").Range("A2:T500").ClearContents
 
