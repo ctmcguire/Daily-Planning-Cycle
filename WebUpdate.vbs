@@ -126,18 +126,18 @@ Sub Run_WebUpdate(sheetdate As String)
 		For i = 0 To UBound(FlowGaugeName)
 			'If the value exists, the Date, Time, Value and Historical average are uploaded.
 			If .Sheets("Raw2").Range("E" & (FlowOffset + i)) < .Sheets(InputDate).Range("E" & (FlowOffset + i)) Then _
-				Call Run_SQL(i + FlowOffset, InputDate, FlowGaugeName(i), LevelsConn, False)
+				Call Run_SQL(i + FlowOffset, InputDate, FlowGaugeName(i), LevelsConn)
 		Next i
 
 		For i = 0 To UBound(LakeGaugeName)
 			If .Sheets("Raw2").Range("E" & (LakeOffset + i)) < .Sheets(InputDate).Range("E" & (LakeOffset + i)) Then _
-				Call Run_SQL(i + LakeOffset, InputDate, LakeGaugeName(i), LevelsConn, False)
+				Call Run_SQL(i + LakeOffset, InputDate, LakeGaugeName(i), LevelsConn)
 		Next i
 
 		For i = 0 To UBound(WeekGaugeName)
 			'These values are the same between the Raw2 sheet and the other sheets, so this if statement instead checks if the value is positive
 			If 0 < .Sheets(InputDate).Range("E" & (WeekOffset + i)) Then _
-				Call Run_SQL(i + WeekOffset, InputDate, WeekGaugeName(i), LevelsConn, True) 'NoRain is set to true because there is no precipitation measurement for the weekly values
+				Call Run_SQL(i + WeekOffset, InputDate, WeekGaugeName(i), LevelsConn) 'NoRain is set to true because there is no precipitation measurement for the weekly values
 		Next i
 
 		LevelsConn.Close
@@ -159,10 +159,8 @@ End Sub
 ' * @param InputDate	- The date (and sheetname) of the worksheet whose data is being transferred to the SQL database
 ' * @param GaugeName	- The name of the gauge that corresponds to the i-value
 ' * @param LevelsConn	- A connection to the SQL database that can be used to run the SQL queries
-' * @param NoRain		- A boolean value that is true if no precipitation measurement exists, and false otherwise
-' * 
 ' */
-Sub Run_SQL(i As Integer, InputDate As String, GaugeName As String, LevelsConn As ADODB.Connection, NoRain As Boolean)
+Sub Run_SQL(i As Integer, InputDate As String, GaugeName As String, LevelsConn As ADODB.Connection)
 	Dim strSQL As String 'String to store the SQL query
 	Dim havg As String
 
@@ -179,7 +177,8 @@ Sub Run_SQL(i As Integer, InputDate As String, GaugeName As String, LevelsConn A
 			esc(Format(.Sheets(InputDate).Range("C" & i), "h:mm AMPM")) & "', " & _
 			esc(.Sheets(InputDate).Range("E" & i)) & ", "
 
-		If IsEmpty(ThisWorkbook.Sheets(InputDate).Range("K" & i)) Or IsEmpty(ThisWorkbook.Sheets(InputDate).Range("L" & i)) Or NoRain Then
+		If IsEmpty(ThisWorkbook.Sheets(InputDate).Range("K" & i)) Or GaugeName = "Mississippi Lake" _
+			  Or GaugeName = "Kashwakamak Lake" Or 0 < InStr(GaugeName, "(weekly)") Then
 			'If there is a missing precipitation value (or precipitation is not recorded), then there is no precipitation value to store
 			strSQL = strSQL & havg & ", NULL) ON DUPLICATE KEY UPDATE time='" & _
 				esc(Format(.Sheets(InputDate).Range("C" & i), "h:mm AMPM")) & "', datainfo=" & _
