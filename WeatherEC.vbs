@@ -35,34 +35,34 @@ Sub ECWeatherScraper(SheetName As String)
 		'-----------------------------------------------------------------------------------------------------------------------------'
 
 		Data(0) = "Observed at:"
-		Cell(0) = "B106"
+		Cell(0) = "B" & (DayOffset - 5)
 
 		Data(1) = "Condition:"
-		Cell(1) = "B107"
+		Cell(1) = "B" & (DayOffset - 4)
 
 		Data(2) = "Temperature:"
-		Cell(2) = "B108"
+		Cell(2) = "B" & (DayOffset - 3)
 
 		Data(3) = "Pressure / Tendency:"
-		Cell(3) = "E108"
+		Cell(3) = "E" & (DayOffset - 3)
 
 		Data(4) = "Visibility:"
-		Cell(4) = "E109"
+		Cell(4) = "E" & (DayOffset - 2)
 
 		Data(5) = "Humidity:"
-		Cell(5) = "E110"
+		Cell(5) = "E" & (DayOffset - 1)
 
 		Data(6) = "Wind Chill:"
-		Cell(6) = "B109"
+		Cell(6) = "B" & (DayOffset - 2)
 
 		Data(7) = "Dewpoint:"
-		Cell(7) = "H108"
+		Cell(7) = "H" & (DayOffset - 3)
 
 		Data(8) = "Wind:"
-		Cell(8) = "H109"
+		Cell(8) = "H" & (DayOffset - 2)
 
 		Data(9) = "Air Quality Health Index:"
-		Cell(9) = "B110"
+		Cell(9) = "B" & (DayOffset - 1)
 
 		''''''''''Loads the web data into VBA'''''''''''''
 		''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -99,7 +99,7 @@ Sub ECWeatherScraper(SheetName As String)
 		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<title>") + 7, Len(HTML_Data))
 		DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "</title>") - 1)
 		'The SheetName variable is recieved from the datepicker in the 'Update' form.
-		.Sheets(SheetName).Range("B" & DayOffset).Value = DataString
+		.Sheets(SheetName).Range("B" & (DayOffset - 6)).Value = DataString
 
 		For i = 0 to UBound(Data)
 			DataString = "N/A" 'Default value in case some of the data (specifically wind chill) isn't in the html string
