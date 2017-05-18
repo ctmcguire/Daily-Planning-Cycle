@@ -23,7 +23,8 @@ Sub KiWIS_Import(InputDate As Date)
 	Dim URL2 As String
 	'The variable 'i' is used as a counter in the loop.
 	Dim i As Integer
-
+	'The variable 'qt' is used to delete the QueryTables connections.
+	Dim qt As QueryTable
 	'All of the time series with identical parameters are stored in groups so that the data is loaded efficiently.
 	'A time series can be added to a group in WISKi by right clicking on the time series and clicking 'Add to group'.
 	'KiWIS uses time series group IDs to identify the required group.
@@ -46,10 +47,6 @@ Sub KiWIS_Import(InputDate As Date)
 	'The Format function rearrages the date so that it can be processed by the KiWIS server.
 	PrevDate = Format(DateAdd("d", -1, InputDate), "yyyy-mm-d")
 	PrevDate = "&from=" & PrevDate & "T00:00:00.000-05:00&to=" & PrevDate & "T23:59:59.000-05:00"
-
-	Dim qt As QueryTable
-
-
 
 	'The previously loaded data in 'Raw1' is deleted to make room for the new data.
 	ThisWorkbook.Sheets("Raw1").Range("A2:T500").ClearContents
@@ -80,8 +77,8 @@ Sub KiWIS_Import(InputDate As Date)
 
 	Next i
 
-	'This removes all of the connections so as to not bog down the worksheet and/or excel file
-	For Each qt In Sheets("Raw1").QueryTables
+	'This loop removes all QueryTable connections so as to not bog down the worksheet and/or excel file.
+	For Each qt In ThisWorkbook.Sheets("Raw1").QueryTables
 		qt.Delete
 	Next
 
