@@ -44,7 +44,7 @@ Sub TWNWeatherScraper(SheetName As String)
 		Column(0) = "B" & DayOffset + 1
 		Column(1) = "B" & DayOffset + 2
 		Column(2) = "E" & DayOffset + 1
-		Column(3) = "E" & DayOffset + 1
+		Column(3) = "E" & DayOffset + 2
 		Column(4) = "B" & DayOffset
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
