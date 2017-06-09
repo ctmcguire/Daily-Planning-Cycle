@@ -12,6 +12,7 @@ Sub TWNWeatherScraper(SheetName As String)
 	'-----------------------------------------------------------------------------------------------------------------------------'
 	'The WNWeatherScraper module loads the 7 day forecast data from theweathernetwork.com.
 	'-----------------------------------------------------------------------------------------------------------------------------'
+	dim DayOffset = 88
 	'the xmlhttp object interacts with the web server to retrieve the data
 	Dim xmlhttp As Object
 	'The HTML_Data variable stores all the response HTML text from the website as a string.
@@ -40,11 +41,11 @@ Sub TWNWeatherScraper(SheetName As String)
 		Data(3) = "windGustSpeed_kmh"
 		Data(4) = "name_en"
 
-		Column(0) = "B89"
-		Column(1) = "B90"
-		Column(2) = "E89"
-		Column(3) = "E90"
-		Column(4) = "B88"
+		Column(0) = "B" & DayOffset + 1
+		Column(1) = "B" & DayOffset + 2
+		Column(2) = "E" & DayOffset + 1
+		Column(3) = "E" & DayOffset + 1
+		Column(4) = "B" & DayOffset
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
 
@@ -78,7 +79,7 @@ Sub TWNWeatherScraper(SheetName As String)
 		'The 25,569 adds the differece between Jan. 1, 1900 when Excel time starts and Jan. 1, 1970 when UNIX time begins.
 		DPCTimeStamp = (WebTimeStamp / (86400000) + 25569)
 		'The SheetName variable is recieved from the datepicker in the 'Update' form
-		.Sheets(SheetName).Range("C88").Value = DPCTimeStamp
+		.Sheets(SheetName).Range("C" & DayOffset).Value = DPCTimeStamp
 
 		For j = 0 to 4 'We aren't using the whole array, so this isn't UBound(Data)
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, Chr(34) & Data(j) & Chr(34) & ":") + Len(Chr(34) & Data(j) & Chr(34) & ":"), Len(HTML_Data))
@@ -121,11 +122,11 @@ Sub TWNWeatherScraper(SheetName As String)
 		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "timestamp_local") + 18, Len(HTML_Data))
 		WebTimeStamp = Mid(HTML_Data, 1, InStr(HTML_Data, "tzbias") - 3)
 		DPCTimeStamp = (WebTimeStamp / (86400000) + 25569)
-		.Sheets(SheetName).Range("B91").Value = DPCTimeStamp
+		.Sheets(SheetName).Range("B" & DayOffset + 3).Value = DPCTimeStamp
 
 '		next_STrow:
 		For i = 1 to 5
-			Day = 91 + i
+			Day = DayOffset + 3 + i
 
 			'Isolates the Forecast date
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "timestampApp_local") + 21, Len(HTML_Data))
@@ -171,10 +172,10 @@ Sub TWNWeatherScraper(SheetName As String)
 		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "timestamp_local") + 18, Len(HTML_Data))
 		WebTimeStamp = Mid(HTML_Data, 1, InStr(HTML_Data, "tzbias") - 3)
 		DPCTimeStamp = (WebTimeStamp / (86400000) + 25569)
-		.Sheets(SheetName).Range("B97").Value = DPCTimeStamp
+		.Sheets(SheetName).Range("B" & DayOffset + 9).Value = DPCTimeStamp
 
 		For i = 1 to 6
-			Day = 97 + i
+			Day = DayOffset + 9 + i
 
 			'Isolates the Long Term Forecast date
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "timestampApp_local") + 21, Len(HTML_Data))
