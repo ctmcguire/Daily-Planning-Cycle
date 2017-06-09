@@ -1,5 +1,21 @@
 Option Explicit
 
+public const flowCount as integer = 12
+public const dailyCount as integer = 16
+public const weeklyCount as integer = 26
+public const AccuCount as integer = 5
+public const TWNCount as integer = 15
+public const ECCount as integer = 13
+
+public const flowStart as integer = 6
+public const dailyStart as integer = flowStart + flowCount + 5
+public const weeklyStart as integer = dailyStart + dailyCount + 4
+public const AccuStart as integer = weeklyStart + weeklyCount + 12
+public const TWNStart as integer = AccuStart + AccuCount + 2
+public const ECCStart as integer = TWNStart + TWNCount + 2
+public const CloyneAccuStart as integer = ECCStart + ECCount + 2
+public const CloyneTWNStart as integer = CloyneAccuStart + AccuCount + 2
+
 'The date picker assigns a value to the public variable 'InputDay'.
 'The variable is public so that it can be used by all the called functions.
 Public InputDay As String
