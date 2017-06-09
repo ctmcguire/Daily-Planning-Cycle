@@ -12,8 +12,8 @@ public const dailyStart as integer = flowStart + flowCount + 5
 public const weeklyStart as integer = dailyStart + dailyCount + 4
 public const AccuStart as integer = weeklyStart + weeklyCount + 12
 public const TWNStart as integer = AccuStart + AccuCount + 2
-public const ECCStart as integer = TWNStart + TWNCount + 2
-public const CloyneAccuStart as integer = ECCStart + ECCount + 2
+public const ECStart as integer = TWNStart + TWNCount + 2
+public const CloyneAccuStart as integer = ECStart + ECCount + 2
 public const CloyneTWNStart as integer = CloyneAccuStart + AccuCount + 2
 
 'The date picker assigns a value to the public variable 'InputDay'.
