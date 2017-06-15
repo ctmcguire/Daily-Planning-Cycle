@@ -12,7 +12,7 @@ Sub TWNWeatherScraper(SheetName As String)
 	'-----------------------------------------------------------------------------------------------------------------------------'
 	'The WNWeatherScraper module loads the 7 day forecast data from theweathernetwork.com.
 	'-----------------------------------------------------------------------------------------------------------------------------'
-	dim DayOffset = 88
+	const DayOffset as integer = TWNStart
 	'the xmlhttp object interacts with the web server to retrieve the data
 	Dim xmlhttp As Object
 	'The HTML_Data variable stores all the response HTML text from the website as a string.
@@ -232,7 +232,7 @@ Sub TWNCloyneScraper(SheetName As String)
 	Dim DPCTimeStamp As Double
 	'The Day variable is used to navigate the rows.
 	Dim Day As Integer
-	Const DayOffset As Integer = 133 'This constant stores the first row in which weather info is stored
+	Const DayOffset As Integer = CloyneTWNStart 'This constant stores the first row in which weather info is stored
 	'Loop iterator variables
 	Dim i As Integer
 	Dim j As Integer
@@ -334,8 +334,8 @@ Sub TWNCloyneScraper(SheetName As String)
 		.Sheets(SheetName).Range("B" & DayOffset + 3).Value = DPCTimeStamp
 
 '       next_STrow:
-		For i = 4 To 8
-			Day = DayOffset + i
+		For i = 1 To 5
+			Day = DayOffset + 3 + i
 
 			'Isolates the Forecast date
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "timestampApp_local") + 21, Len(HTML_Data))
@@ -383,8 +383,8 @@ Sub TWNCloyneScraper(SheetName As String)
 		DPCTimeStamp = (WebTimeStamp / (86400000) + 25569)
 		.Sheets(SheetName).Range("B" & DayOffset + 9).Value = DPCTimeStamp
 
-		For i = 10 To 15
-			Day = DayOffset + i
+		For i = 1 To 6
+			Day = DayOffset + 9 + i
 
 			'Isolates the Long Term Forecast date
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "timestampApp_local") + 21, Len(HTML_Data))

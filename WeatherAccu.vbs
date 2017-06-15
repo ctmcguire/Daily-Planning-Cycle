@@ -20,7 +20,7 @@ Sub AccuWeatherScraper(SheetName As String)
 	Dim DataString As String
 	'The Day variable is used to navigate the rows.
 	Dim Day As Integer
-	Const DayOffset As Integer = 81 'This constant stores the first row in which weather info is stored
+	Const DayOffset As Integer = AccuStart 'This constant stores the first row in which weather info is stored
 	'The Temp variable is used to store the temperature data
 	Dim Temp As String
 	'The URL variable reduces the chance of error when cycling through the precipitation pages.
@@ -226,7 +226,7 @@ Sub AccuCloyneScraper(SheetName As String)
 	Dim DataString As String
 	'The Day variable is used to navigate the rows.
 	Dim Day As Integer
-	Const DayOffset As Integer = 126 'This constant stores the first row in which weather info is stored
+	Const DayOffset As Integer = CloyneAccuStart 'This constant stores the first row in which weather info is stored
 	'The Temp variable is used to store the temperature data
 	Dim Temp As String
 	'The URL variable reduces the chance of error when cycling through the precipitation pages.

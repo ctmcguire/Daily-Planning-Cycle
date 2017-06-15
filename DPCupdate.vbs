@@ -1,8 +1,7 @@
 Option Explicit
 
-public const flowCount as integer = 12
-public const dailyCount as integer = 16
-public const weeklyCount as integer = 26
+
+'NOTE: Most of the Constant values used by UpdateDPC are created in the Gauges Macro
 public const AccuCount as integer = 5
 public const TWNCount as integer = 15
 public const ECCount as integer = 13
@@ -12,9 +11,10 @@ public const dailyStart as integer = flowStart + flowCount + 5
 public const weeklyStart as integer = dailyStart + dailyCount + 4
 public const AccuStart as integer = weeklyStart + weeklyCount + 12
 public const TWNStart as integer = AccuStart + AccuCount + 2
-public const ECStart as integer = TWNStart + TWNCount + 2
+public const ECStart as integer = TWNStart + TWNCount + 8
 public const CloyneAccuStart as integer = ECStart + ECCount + 2
 public const CloyneTWNStart as integer = CloyneAccuStart + AccuCount + 2
+
 
 'The date picker assigns a value to the public variable 'InputDay'.
 'The variable is public so that it can be used by all the called functions.
@@ -24,10 +24,10 @@ Public InputNumber As Date
 'The UpdateDPC subroutine is run when the Update DPC button is pressed on sheet 'Raw1'
 'UpdateDPC runs the modules that load a new sheet and populate it with the requested data.
 Sub UpdateDPC()
+	Call Gauges.InitializeGauges
 	'-------------------------------------------------------------------------------------------------------------------------------------------------'
 	'The 'DPCsheet' variable is used to check if the requested sheet already exists.
 	Dim DPCsheet As Excel.Worksheet
-
 	'The Status Bar is located on the bottom left corner of the Excel window.  It's default status is 'READY'.
 	'The Status Bar Displays 'Processing Request...' until the UpdateDPC subroutine has ended.
 	Application.StatusBar = "Processing Request..."
@@ -54,16 +54,24 @@ Sub UpdateDPC()
 	'This 'For' loop checks that the a sheet for the requested date does not already exist.
 	For Each DPCsheet In ThisWorkbook.Worksheets
 		If DPCsheet.name = InputDay Then
-			'If a sheet with the requested date already exists, the subroutine exits so that previous data is not overwritten.
-			Answer = MsgBox("A sheet for '" & InputDay & "' already exists.  Do you want to fill the empty cells?", vbYesNo, "Sheet Already Exists")
-			If Answer = vbYes Then
-				DPCsheet.Unprotect
-			Else
-				'The previously adjusted modes are returned to their default state.
+			If InputNumber < 42873 Then
+				MsgBox "The sheet layout changed on May 18th.  Sheets loaded before this day cannot be updated.  This update attempt will now exit."
 				Application.StatusBar = False
 				Application.Calculation = xlCalculationAutomatic
 				Application.ScreenUpdating = True
 				Exit Sub
+			Else
+				'If a sheet with the requested date already exists, the subroutine exits so that previous data is not overwritten.
+				Answer = MsgBox("A sheet for '" & InputDay & "' already exists.  Do you want to fill the empty cells?", vbYesNo, "Sheet Already Exists")
+				If Answer = vbYes Then
+					DPCsheet.Unprotect
+				Else
+					'The previously adjusted modes are returned to their default state.
+					Application.StatusBar = False
+					Application.Calculation = xlCalculationAutomatic
+					Application.ScreenUpdating = True
+					Exit Sub
+				End If
 			End If
 		End If
 	Next
@@ -83,6 +91,8 @@ Sub UpdateDPC()
 		Call WeatherAccu.AccuWeatherScraper(InputDay)
 		Call WeatherEC.ECWeatherScraper(InputDay)
 		Call WeatherTWN.TWNWeatherScraper(InputDay)
+		Call WeatherAccu.AccuCloyneScraper(InputDay)
+		Call WeatherTWN.TWNCloyneScraper(InputDay)
 	End If
 
 	'The DataProtector module locks cells for editing and saves a backup of the daily planning cycle to the local desktop and the Water Management Files folder.

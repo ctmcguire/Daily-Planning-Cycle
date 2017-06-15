@@ -43,8 +43,8 @@ Sub CreateSheet(SheetName As String, InputDate As Date)
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
 		'The date is loaded into cell B6 on the new sheet and cell formulas in the sheet populate the remaining dates.
-		Range("B6").Value = InputDate
-		Range("C6:C18, C23:C39").Value = TimeValue(InputDate)'It might be easier to set all of them to the inputdate, and unset those that shouldn't have that value.  Or use a loop
+		Range("B" & flowStart).Value = InputDate
+		Range("C" & flowStart & ":C" & flowStart+flowCount & ", C" & dailyStart & ":C" & dailyStart+dailyCount).Value = TimeValue(InputDate)
 
 		dim cell
 		for each cell in unsetDate
