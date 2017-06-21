@@ -57,7 +57,7 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 		Column(3) = "E" & DayOffset + 2
 		Column(4) = "B" & DayOffset
 
-		If .Sheets(SheetName).Range("C" & DayOffset).Value <> "" And .Sheets(SheetName).Range("C" & DayOffset).Value <> "No Response from The Weather Network" Then _
+		If .Sheets(SheetName).Range("B" & DayOffset).Value <> "" And .Sheets(SheetName).Range("B" & DayOffset).Value <> "No Response from The Weather Network" Then _
 			Exit Sub
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
@@ -72,7 +72,7 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 		'Send the data as name/value pairs
 		If SendXML(xmlhttp) <> 0 Then
 			Set xmlhttp = Nothing
-			.Sheets(SheetName).Range("C" & DayOffset).Value = "No Response from The Weather Network"
+			.Sheets(SheetName).Range("B" & DayOffset).Value = "No Response from The Weather Network"
 			Exit Sub
 		End If
 		'Pauses the module while the web data loads.
