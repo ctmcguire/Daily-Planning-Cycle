@@ -98,17 +98,15 @@ Sub UpdateDPC(SheetName As String, SheetNo As Date)
 	'AddSheet only runs if a sheet for the requested day does not exist.
 	If Answer = 0 Then Call AddSheet.CreateSheet(SheetName, SheetNo)
 	'The KiWISLoader module loads the KiWIS tables to the sheet 'Raw1'.
-	Call KiWISLoader.KiWIS_Import(SheetNo)
-	'The KiWIS2Excel module loads the data from Raw1 to the new sheet that was created.
-	Call KiWIS2Excel.Raw1Import(SheetName)
+	Call KiWISLoader.KiWIS_Import(SheetName, SheetNo)
 
 	'The Weather... modules scrape weather data from AccuWeather, Environment Canada and The Weather Network and pastes it into the new sheet.
 	If Answer = 0 Then
-		Call WeatherAccu.AccuWeatherScraper(SheetName)
-		Call WeatherEC.ECWeatherScraper(SheetName)
-		Call WeatherTWN.TWNWeatherScraper(SheetName)
-		Call WeatherAccu.AccuCloyneScraper(SheetName)
-		Call WeatherTWN.TWNCloyneScraper(SheetName)
+		Call WeatherAccu.CPScraper(SheetName)
+		Call WeatherEC.OttawaScraper(SheetName)
+		Call WeatherTWN.CPScraper(SheetName)
+		Call WeatherAccu.CloyneScraper(SheetName)
+		Call WeatherTWN.CloyneScraper(SheetName)
 	End If
 
 	'The DataProtector module locks cells for editing and saves a backup of the daily planning cycle to the local desktop and the Water Management Files folder.

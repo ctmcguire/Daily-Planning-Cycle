@@ -1,6 +1,6 @@
 Option Explicit
 
-Sub KiWIS_Import(InputDate As Date)
+Sub KiWIS_Import(SheetName As String, InputDate As Date, Optional IsAuto As Boolean = False)
 	'-----------------------------------------------------------------------------------------------------------------------------'
 	'Please send any questions or feedback to cmcguire@mvc.on.ca
 	'-----------------------------------------------------------------------------------------------------------------------------'
@@ -71,11 +71,21 @@ Sub KiWIS_Import(InputDate As Date)
 		With ThisWorkbook.Sheets("Raw1").QueryTables.Add(Connection:="URL;" & URL2, Destination:=ThisWorkbook.Sheets("Raw1").Cells(2, 3 * i + 1))
 			.BackgroundQuery = True
 			.TablesOnlyFromHTML = True
+			On Error Resume Next
 			.Refresh BackgroundQuery:=False
+			If Err.Number <> 0 Then
+				On Error Goto 0
+				If Not IsAuto Then _
+					MsgBox "KiWIS Loader has failed"
+				Goto TheEnd
+			End If
+			On Error Goto 0
 			.SaveData = True
 		End With
-
 	Next i
+
+	Call KiWIS2Excel.Raw1Import(SheetName)
+	TheEnd:
 
 	'This loop removes all QueryTable connections so as to not bog down the worksheet and/or excel file.
 	For Each qt In ThisWorkbook.Sheets("Raw1").QueryTables

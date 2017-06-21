@@ -47,9 +47,7 @@ Public Sub DailyUpdate()
 	'The 'AddSheet' module creates a new sheet in the workbook, names it after the requested date, and pastes the template from 'Raw2'.
 	Call AddSheet.CreateSheet(InDay, InNumber)
 	'The KiWISLoader module loads the KiWIS tables to the sheet 'Raw1'.
-	Call KiWISLoader.KiWIS_Import(InNumber)
-	'The KiWIS2Excel module loads the data from Raw1 to the new sheet that was created.
-	Call KiWIS2Excel.Raw1Import(InDay)
+	Call KiWISLoader.KiWIS_Import(Inday, InNumber, True)
 
 	'The Weather... modules scrape weather data from AccuWeather, Environment Canada and The Weather Network and pastes it into the new sheet.
 	Call WeatherAccu.CPScraper(InDay)
@@ -59,7 +57,7 @@ Public Sub DailyUpdate()
 	Call WeatherTWN.CloyneScraper(InDay)
 
 	'The DataProtector module locks cells for editing and saves a backup of the daily planning cycle to the local desktop and the Water Management Files folder.
-	Call DataProtector.LockCells(InDay, InNumber)
+	Call DataProtector.LockCells(InDay, InNumber, True)
 
 	'----------------------------------------------------------------------------------------------------------------------------------------------'
 	'This 'With' statement ensures that the workbook is open on the new sheet after the module has run.
