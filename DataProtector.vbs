@@ -1,6 +1,6 @@
 Option Explicit
 
-Sub LockCells(SheetName As String, InputDate As Date) 
+Sub LockCells(SheetName As String, InputDate As Date, Optional IsAuto As Boolean = false) 
 	'-----------------------------------------------------------------------------------------------------------------------------'
 	'Please send any questions or feedback to cmcguire@mvc.on.ca
 	'-----------------------------------------------------------------------------------------------------------------------------'
@@ -48,10 +48,15 @@ Sub LockCells(SheetName As String, InputDate As Date)
 		.Sheets(SheetName).Protect AllowInsertingRows:=True, AllowFormattingCells:=True, AllowFormattingColumns:=True, AllowFormattingRows:=True
 		
 		'The Daily Planning Cycle file is saved.
+		On Error Resume Next
 		.Save
+		If Err.Number <> 0 And Not IsAuto Then _
+			MsgBox "Failed to save because no network was found"
+		On Error Goto 0
 		.Application.DisplayAlerts = False
 		'A backup copy is saved to the 'Water Management Files' folder and the local desktop.
 		.SaveCopyAs "N:\common_folder\Water Management Files\Backup " & ThisWorkbook.name
+		.SaveCopyAs "C:\Users\Public\Documents\Backup " & ThisWorkbook.name
 		.SaveCopyAs CreateObject("WScript.Shell").SpecialFolders("Desktop") & Application.PathSeparator & "Backup " & ThisWorkbook.name
 	End With
 End Sub
