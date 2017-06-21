@@ -1,6 +1,16 @@
 Option Explicit
 
-Sub ECWeatherScraper(SheetName As String)
+Private Function SendXML(xmlhttp As Object) As Integer
+	On Error Resume Next
+	xmlhttp.send
+	If Err.Number <> 0 Then
+		SendXML = 1
+		Exit Function
+	End If
+	SendXML = 0
+End Function
+
+Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset As Integer)
 	'-----------------------------------------------------------------------------------------------------------------------------'
 	'Please send any questions or feedback to cmcguire@mvc.on.ca
 	'-----------------------------------------------------------------------------------------------------------------------------'
@@ -21,7 +31,7 @@ Sub ECWeatherScraper(SheetName As String)
 	Dim Low As Integer
 	'The Day variable is used to navigate the rows.
 	Dim Day As Integer
-	Const DayOffset As Integer = ECStart 'Stores the first row of the forecast section
+'	Const DayOffset As Integer = ECStart 'Stores the first row of the forecast section
 
 	Dim i As Integer 'Loop iterator variable
 
@@ -64,6 +74,9 @@ Sub ECWeatherScraper(SheetName As String)
 		Data(9) = "Air Quality Health Index:"
 		Cell(9) = "B" & (DayOffset - 1)
 
+		If .Sheets(SheetName).Range("B" & (DayOffset - 6)).Value <> "" And .Sheets(SheetName).Range("B" & (DayOffset - 6)).Value <> "No Response from Environment Canada" Then _
+			Exit Sub
+
 		''''''''''Loads the web data into VBA'''''''''''''
 		''''''''''''''''''''''''''''''''''''''''''''''''''
 		'Creates the xmlhttp object that interacts with the website. .ServerXMLHTTP60 is used so the page data is not cached.
@@ -72,11 +85,15 @@ Sub ECWeatherScraper(SheetName As String)
 		'Indicates that page that will receive the request and the type of request being submitted.
 		'Your location's link can be found by searching for a local forecast at: http://weather.gc.ca/canada_e.html
 		'After the local forecast has loaded, click on the RSS Weather link underneath the historical data and adjacent to the 'Follow:" text.
-		xmlhttp.Open "GET", "http://weather.gc.ca/rss/city/on-118_e.xml", False
+		xmlhttp.Open "GET", BaseURL, False
 		'Indicate that the body of the request contains form data
 		xmlhttp.setRequestHeader "Content-Type", "text/xml; charset=utf-8"
 		'Send the data as name/value pairs
-		xmlhttp.send
+		If SendXML(xmlhttp) <> 0 Then
+			Set xmlhttp = Nothing
+			.Sheets(SheetName).Range("B" & (DayOffset - 6)).Value = "No Response from Environment Canada"
+			Exit Sub
+		End If
 		'Pauses the module while the web data loads.
 		While xmlhttp.READYSTATE <> 4
 			DoEvents
@@ -149,4 +166,8 @@ Sub ECWeatherScraper(SheetName As String)
 		Set xmlhttp = Nothing
 
 	End With
+End Sub
+
+Sub OttawaScraper(SheetName As String)
+	Call ECWeatherScraper(SheetName, "http://weather.gc.ca/rss/city/on-118_e.xml", ECStart)
 End Sub

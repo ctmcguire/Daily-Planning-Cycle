@@ -27,21 +27,13 @@ Public DailyGauges(dailyCount) As CGauge
 Public WeeklyGauges(weeklyCount) As CGauge
 
 
-'Private Sub AddSensors(Gauge As CGauge, ParamArray Sensors() As Variant)
-'	Dim Sensor As Variant
-'	For Each Sensor In Sensors
-'		Gauge.Add Sensor
-'	Next
-'End Sub
-
 '/**
 ' * The InitializeGauges function is used to initialize the 3 CGauge array constants, and should be called
 ' *  at the beginning of the first Sub or Function called in a macro (currently DPCUpdate.UpdateDPC and 
 ' * WebUpdate.Run_WebUpdate)
 ' * 
 ' * INSTRUCTIONS FOR ADDING A NEW GAUGE:
-' * 		1.  Open the Gauges visual basic file (Congrats!  You're already here!)
-' * 		2.  Increase or decrease flowCount, dailyCount, and/or weeklyCount by the number of gauges being 
+' * 		1.  Increase or decrease flowCount, dailyCount, and/or weeklyCount by the number of gauges being 
 ' * 			added to their respective CGauge arrays
 ' * 		3.  Use the CGauge function to initialize the new Gauges in the Gauge Arrays.  (See the CGauge 
 ' * 			class file for more information on how to use the CGauge.CGauge function)
@@ -51,8 +43,7 @@ Public WeeklyGauges(weeklyCount) As CGauge
 ' * 		6.  Add a new row for each of the new gauges into the Raw2 table
 ' * 
 ' * INSTRUCTIONS FOR ADDING A NEW SENSOR
-' * 		1.  Open the Gauges visual basic file (Congrats again!  You're still here!)
-' * 		2.  Create a new private CGaugeSensor variable at the top of the file (with the other sensor variables)
+' * 		1.  Create a new private CGaugeSensor variable at the top of the file (with the other sensor variables)
 ' * 		3.  Create a new public String constant that has the variable name of the new Sensor variable prefixed 
 ' * 			by "Name" (take a look at the other SensorName constants if you do not understand).  This constant
 ' * 			should store the (unique) name of what the Sensor measures, but as long as its value is unique it 
@@ -65,14 +56,13 @@ Public WeeklyGauges(weeklyCount) As CGauge
 ' * 			the CGaugeSensor.CGaugeSensor function)
 ' * 
 ' * INSTRUCTIONS FOR CHANGING THE COLUMN OF A SENSOR
-' * 		1.  You've already done it
-' * 		2.  Change the parameter for the column being changed (dpc column or raw1 column
+' * 		1.  Change the parameter for the column being changed (dpc column or raw1 column) to whichever column you wish to give it
 ' * 
 ' * INSTRUCTIONS FOR CHANGING THE ROW OF A GAUGE
-' * 		2.  Because of the i variable being incremented after initializing each Gauge, the row is entirely 
+' * 		1.  Because of the i variable being incremented after initializing each Gauge, the row is entirely 
 ' * 			dependent on where it is initialized.  So, to change its row you just need to move its 2 to 3 
 ' * 			lines of code to whereever you wish the Gauge to appear in the table
-' * 		3.  Move the respective row in Raw2 to finish changing the Gauge's row
+' * 		2.  Move the respective row in Raw2 to finish changing the Gauge's row
 '**/
 Sub InitializeGauges()
 	Set Stage = New CGaugeSensor
@@ -166,8 +156,8 @@ Sub InitializeGauges()
 
 
 	i = 0
-	DailyGauges(0).CGauge "Shabomeka Lake", "Gauge - Shabomeka Lake"
-	DailyGauges(0).Add Level, Rain24H, Rain, Batt
+	DailyGauges(i).CGauge "Shabomeka Lake", "Gauge - Shabomeka Lake"
+	DailyGauges(i).Add Level, Rain24H, Rain, Batt
 	i = i + 1
 
 	DailyGauges(i).CGauge "Mazinaw Lake", "Gauge - Mazinaw Lake"
@@ -236,7 +226,7 @@ Sub InitializeGauges()
 
 
 	i = 0
-	WeeklyGauges(0).CGauge "Shabomeka Lake (weekly)"
+	WeeklyGauges(i).CGauge "Shabomeka Lake (weekly)"
 	i = i + 1
 
 	WeeklyGauges(i).CGauge "Mazinaw Lake (weekly)"

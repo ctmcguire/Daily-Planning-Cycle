@@ -1,5 +1,5 @@
 'CGauge Class
-Private pName As String 'Gauge name as it appears in the dpc table
+Private pName As String 'Gauge name as it appears in the SQL database
 Private pID As String 'Gauge name as it appears in the KiWIS data
 Private pSensors As Collection 'Collection of Sensors.
 
