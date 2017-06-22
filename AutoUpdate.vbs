@@ -47,7 +47,7 @@ Public Sub DailyUpdate()
 	'The 'AddSheet' module creates a new sheet in the workbook, names it after the requested date, and pastes the template from 'Raw2'.
 	Call AddSheet.CreateSheet(InDay, InNumber)
 	'The KiWISLoader module loads the KiWIS tables to the sheet 'Raw1'.
-	Call KiWISLoader.KiWIS_Import(Inday, InNumber, True)
+	Call KiWISLoader.KiWIS_Import(InDay, InNumber, True)
 
 	'The Weather... modules scrape weather data from AccuWeather, Environment Canada and The Weather Network and pastes it into the new sheet.
 	Call WeatherAccu.CPScraper(InDay)
@@ -67,7 +67,7 @@ Public Sub DailyUpdate()
 		.Range("E16").Select
 	End With
 
-'	Call EmailWorksheet.DailyEmail()
+	Call EmailWorksheet.DailyEmail()
 
 	'The previously adjusted modes are returned to their default state.
 	Application.StatusBar = False
