@@ -31,7 +31,6 @@ Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset A
 	Dim Low As Integer
 	'The Day variable is used to navigate the rows.
 	Dim Day As Integer
-'	Const DayOffset As Integer = ECStart 'Stores the first row of the forecast section
 
 	Dim i As Integer 'Loop iterator variable
 
