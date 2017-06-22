@@ -33,7 +33,6 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 	Dim DPCTimeStamp As Double
 	'The Day variable is used to navigate the rows.
 	Dim Day As Integer
-'	Const DayOffset As Integer = TWNStart
 	'Loop iterator variables
 	Dim i As Integer
 	Dim j As Integer
@@ -140,7 +139,6 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 		DPCTimeStamp = (WebTimeStamp / (86400000) + 25569)
 		.Sheets(SheetName).Range("B" & DayOffset + 3).Value = DPCTimeStamp
 
-'		next_STrow:
 		For i = 1 to 5
 			Day = DayOffset + 3 + i
 
