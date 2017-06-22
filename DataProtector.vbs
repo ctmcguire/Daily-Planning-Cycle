@@ -1,6 +1,6 @@
 Option Explicit
 
-Sub LockCells(SheetName As String, InputDate As Date, Optional IsAuto As Boolean = false) 
+Sub LockCells(SheetName As String, InputDate As Date, Optional IsAuto As Boolean = False)
 	'-----------------------------------------------------------------------------------------------------------------------------'
 	'Please send any questions or feedback to cmcguire@mvc.on.ca
 	'-----------------------------------------------------------------------------------------------------------------------------'
@@ -35,7 +35,7 @@ Sub LockCells(SheetName As String, InputDate As Date, Optional IsAuto As Boolean
 			'The sheet from 7 days before the current date is unprotected.
 			.Sheets(PrevDate).Unprotect
 			'The previously unlocked cells are locked.
-			.Sheets(PrevDate).Range("A1:M" & AccuStart-1).Locked = True
+			.Sheets(PrevDate).Range("A1:M" & AccuStart - 1).Locked = True
 			'The entire sheet is now protected.
 			.Sheets(PrevDate).Protect
 		End With
@@ -43,7 +43,7 @@ Sub LockCells(SheetName As String, InputDate As Date, Optional IsAuto As Boolean
 
 	With ThisWorkbook
 		'The cells containing gauge data are unlocked.
-		.Sheets(SheetName).Range("A1:M" & AccuStart-1).Locked = False
+		.Sheets(SheetName).Range("A1:M" & AccuStart - 1).Locked = False
 		'The sheet is protected and by default, the weather data is locked.
 		.Sheets(SheetName).Protect AllowInsertingRows:=True, AllowFormattingCells:=True, AllowFormattingColumns:=True, AllowFormattingRows:=True
 		
@@ -52,10 +52,14 @@ Sub LockCells(SheetName As String, InputDate As Date, Optional IsAuto As Boolean
 		.Save
 		If Err.Number <> 0 And Not IsAuto Then _
 			MsgBox "Failed to save because no network was found"
-		On Error Goto 0
+		On Error GoTo 0
 		.Application.DisplayAlerts = False
 		'A backup copy is saved to the 'Water Management Files' folder and the local desktop.
+		On Error Resume Next
 		.SaveCopyAs "N:\common_folder\Water Management Files\Backup " & ThisWorkbook.name
+		If Err.Number <> 0 And Not IsAuto Then _
+			MsgBox "Failed to save because no network was found"
+		On Error GoTo 0
 		.SaveCopyAs "C:\Users\Public\Documents\Backup " & ThisWorkbook.name
 		.SaveCopyAs CreateObject("WScript.Shell").SpecialFolders("Desktop") & Application.PathSeparator & "Backup " & ThisWorkbook.name
 	End With
