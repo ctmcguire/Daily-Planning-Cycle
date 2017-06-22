@@ -2,18 +2,18 @@ Option Explicit
 
 
 'NOTE: Most of the Constant values used by UpdateDPC are created in the Gauges Macro
-public const AccuCount as integer = 5
-public const TWNCount as integer = 15
-public const ECCount as integer = 13
+Public Const AccuCount As Integer = 5
+Public Const TWNCount As Integer = 15
+Public Const ECCount As Integer = 13
 
-public const flowStart as integer = 6
-public const dailyStart as integer = flowStart + flowCount + 5
-public const weeklyStart as integer = dailyStart + dailyCount + 4
-public const AccuStart as integer = weeklyStart + weeklyCount + 12
-public const TWNStart as integer = AccuStart + AccuCount + 2
-public const ECStart as integer = TWNStart + TWNCount + 8
-public const CloyneAccuStart as integer = ECStart + ECCount + 2
-public const CloyneTWNStart as integer = CloyneAccuStart + AccuCount + 2
+Public Const flowStart As Integer = 6
+Public Const dailyStart As Integer = flowStart + flowCount + 5
+Public Const weeklyStart As Integer = dailyStart + dailyCount + 4
+Public Const AccuStart As Integer = weeklyStart + weeklyCount + 12
+Public Const TWNStart As Integer = AccuStart + AccuCount + 2
+Public Const ECStart As Integer = TWNStart + TWNCount + 8
+Public Const CloyneAccuStart As Integer = ECStart + ECCount + 2
+Public Const CloyneTWNStart As Integer = CloyneAccuStart + AccuCount + 2
 
 
 'The date picker assigns a value to the public variable 'InputDay'.
@@ -32,7 +32,7 @@ Private Sub Start()
 	Application.Calculation = xlCalculationManual 'Sheet calculations are turned off to speed up the processing time.
 End Sub
 
-Private Sub Finish
+Private Sub Finish()
 	'The previously adjusted modes are returned to their default state.
 	Application.StatusBar = False
 	Application.Calculation = xlCalculationAutomatic
@@ -73,7 +73,7 @@ Sub UpdateDPC(SheetName As String, SheetNo As Date)
 	End If
 	Dim Answer As Integer
 
-	Dim DPCsheet As Excel.Worksheet'The 'DPCsheet' variable is used to check if the requested sheet already exists.
+	Dim DPCsheet As Excel.Worksheet 'The 'DPCsheet' variable is used to check if the requested sheet already exists.
 	'This 'For' loop checks that the a sheet for the requested date does not already exist.
 	For Each DPCsheet In ThisWorkbook.Worksheets
 		If DPCsheet.name = SheetName Then
