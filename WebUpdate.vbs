@@ -62,7 +62,7 @@ Sub Run_WebUpdate(sheetdate As String)
 
 		For i = 0 To UBound(DailyGauges)
 			If .Sheets("Raw2").Range("E" & (dailyStart + i)) < .Sheets(InputDate).Range("E" & (dailyStart + i)) Then _
-				Call Run_SQL(i + dailyStart, InputDate, LakeGaugeName(i), LevelsConn)
+				Call Run_SQL(i + dailyStart, InputDate, DailyGauges(i).Name, LevelsConn)
 		Next i
 
 		For i = 0 To UBound(WeeklyGauges)
