@@ -86,6 +86,7 @@ Public Function Remove(Name As String)
 End Function
 
 Public Sub LoadData(SheetName As String, Row As Integer)
+	ThisWorkbook.Sheets(SheetName).Cells(Row, "G").Formula = GetFormula(SheetName, Row)
 	If pID = "N/A" Then _
 		Exit Sub
 	For Each Sensor In pSensors
@@ -94,3 +95,48 @@ Public Sub LoadData(SheetName As String, Row As Integer)
 		End If
 	Next
 End Sub
+
+Private Function GetFormula(SheetName As String, Row As Integer)
+	Dim Year As Integer
+	Dim PrevYear As Integer
+	Dim PrevSheet As String
+	Dim Gauge As String
+	Dim PrevRow As Integer
+
+	Dim Range As String
+	Dim StartPoint As Integer
+	Dim EndPoint As Integer
+
+	If Row < FlowStart Then
+		GetFormula = ""
+		Exit Function 'If the row is out of bounds, do nothing
+	End If
+
+	With ThisWorkbook
+		Year = CInt(Format(Now, "yyyy"))
+		PrevYear = CInt(Format(.Sheets(SheetName).Cells(Row, "F").Value, "yyyy"))
+		PrevSheet = Format(.Sheets(SheetName).Cells(Row, "F").Value, "mmm d")
+		Gauge = .Sheets(SheetName).Cells(Row, "A").Value
+
+		If PrevYear < Year Then _
+			PrevSheet = "Dec 31"
+		If .Sheets(SheetName).Cells(Row, "F").Formula = "=+B" & Row & "-1" Then _
+			PrevSheet = Format(Now - 1, "mmm d")
+		With .Sheets(PrevSheet)
+			StartPoint = Application.WorksheetFunction.Match("Staff Gauge", .Columns(1), 0)
+			EndPoint = Application.WorksheetFunction.Match("Dam Operations:", .Columns(1), 0)
+
+			If Row < DailyStart Then
+				StartPoint = Application.WorksheetFunction.Match("Stream Gauge", .Columns(1), 0)
+				EndPoint = Application.WorksheetFunction.Match("Lake Gauge", .Columns(1), 0)
+			ElseIf Row < WeeklyStart Then
+				StartPoint = Application.WorksheetFunction.Match("Lake Gauge", .Columns(1), 0)
+				EndPoint = Application.WorksheetFunction.Match("Staff Gauge", .Columns(1), 0)
+			End If
+
+			Range = "A" & StartPoint & ":A" & EndPoint
+			PrevRow = Application.WorksheetFunction.Match(Gauge, .Range(Range), 0) + StartPoint - 1
+		End With
+	End With
+	GetFormula = "=INDIRECT(""'" & PrevSheet & "'!E" & PrevRow & """)"
+End Function
