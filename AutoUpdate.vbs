@@ -67,7 +67,7 @@ Public Sub DailyUpdate()
 		.Range("E16").Select
 	End With
 
-	Call EmailWorksheet.DailyEmail()
+'	Call EmailWorksheet.DailyEmail()
 
 	'The previously adjusted modes are returned to their default state.
 	Application.StatusBar = False
