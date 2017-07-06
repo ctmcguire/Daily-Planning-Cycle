@@ -97,6 +97,8 @@ Public Sub LoadData(SheetName As String, Row As Integer)
 End Sub
 
 Private Function GetFormula(SheetName As String, Row As Integer)
+	GetFormula = "=IF(YEAR(F"& Row &")<YEAR($B$6), INDIRECT(""'Dec 31'!E""&ROW()), INDIRECT(""'""&TEXT(F"& Row &",""mmm d"")&""'!""&""E""&ROW()))" 'Assume that regular behaviour is correct be default
+
 	Dim Year As Integer
 	Dim PrevYear As Integer
 	Dim PrevSheet As String
@@ -107,10 +109,8 @@ Private Function GetFormula(SheetName As String, Row As Integer)
 	Dim StartPoint As Integer
 	Dim EndPoint As Integer
 
-	If Row < FlowStart Then
-		GetFormula = ""
+	If Row < FlowStart Then _
 		Exit Function 'If the row is out of bounds, do nothing
-	End If
 
 	With ThisWorkbook
 		Year = CInt(Format(Now, "yyyy"))
@@ -121,7 +121,9 @@ Private Function GetFormula(SheetName As String, Row As Integer)
 		If PrevYear < Year Then _
 			PrevSheet = "Dec 31"
 		If .Sheets(SheetName).Cells(Row, "F").Formula = "=+B" & Row & "-1" Then _
-			PrevSheet = Format(Now - 1, "mmm d")
+			PrevSheet = Format(CDate(SheetName) - 1, "mmm d")
+		If Not SheetExists(PrevSheet) Then _
+			Exit Function
 		With .Sheets(PrevSheet)
 			StartPoint = Application.WorksheetFunction.Match("Staff Gauge", .Columns(1), 0)
 			EndPoint = Application.WorksheetFunction.Match("Dam Operations:", .Columns(1), 0)
@@ -139,4 +141,17 @@ Private Function GetFormula(SheetName As String, Row As Integer)
 		End With
 	End With
 	GetFormula = "=INDIRECT(""'" & PrevSheet & "'!E" & PrevRow & """)"
+End Function
+
+'This could REALLY be public and global scope, but I'm putting it in here since I don't know where else it will be used yet.
+Private Function SheetExists(SheetName As String)
+	SheetExists = True 'Returned if the sheet is found
+
+	Dim ws As Excel.WorkSheet
+	For Each ws In ThisWorkbook.Sheets
+		If ws.Name = SheetName Then _
+			Exit Function
+	Next
+
+	SheetExists = False 'If we've gotten here, we didn't find the worksheet so we should return false instead
 End Function
