@@ -1,8 +1,8 @@
 Private CloseTime As Date
 
-Private Sub UserForm_Activate()
+Private Sub UserForm_Initialize()
 	TimeOut = True
-	CloseTime = Now + TimeValue("00:01:00")
+	CloseTime = Now + TimeValue("00:03:00")
 	Application.OnTime CloseTime, "ShutdownAction"
 End Sub
 
