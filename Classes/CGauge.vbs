@@ -86,61 +86,47 @@ Public Function Remove(Name As String)
 End Function
 
 Public Sub LoadData(SheetName As String, Row As Integer)
-	ThisWorkbook.Sheets(SheetName).Cells(Row, "G").Formula = GetFormula(SheetName, Row)
-	If pID = "N/A" Then _
-		Exit Sub
-	For Each Sensor In pSensors
-		If IsEmpty(ThisWorkbook.Sheets(SheetName).Cells(Row, Sensor.Column)) Then
-			ThisWorkbook.Sheets(SheetName).Cells(Row, Sensor.Column).Value = Sensor.Value(pID)
-		End If
-	Next
+	With ThisWorkbook.Sheets(SheetName)
+		'.Cells(Row, "G").Formula = GetFormula(SheetName, Row) 'I'm commenting this out for now to avoid confusion caused by having the previous reading formulas being set both here and in Raw2
+		If pID = "N/A" Then _
+			Exit Sub
+		For Each Sensor In pSensors
+			If IsEmpty(.Cells(Row, Sensor.Column)) Then
+				.Cells(Row, Sensor.Column).Value = Sensor.Value(pID)
+			End If
+		Next
+	End With
 End Sub
 
+'This isn't really necessary, since it could easily just get put into the Formula bar, but since it is a long formula this will probably be easier to read and understand
 Private Function GetFormula(SheetName As String, Row As Integer)
-	GetFormula = "=IF(YEAR(F"& Row &")<YEAR($B$6), INDIRECT(""'Dec 31'!E""&ROW()), INDIRECT(""'""&TEXT(F"& Row &",""mmm d"")&""'!""&""E""&ROW()))" 'Assume that regular behaviour is correct be default
+	Dim PrevSheet As String 'Formula for getting the previous sheet name (Daily and Stream gauges use a static value)
+	Dim StartPoint As String 'Formula for getting the start of the range of cells to look in
+	Dim EndPoint As String 'Formula for getting the end of the range of cells to look in
+	Dim PrevRow As String 'Formula for getting the row of the previous reading in the previous sheet
 
-	Dim Year As Integer
-	Dim PrevYear As Integer
-	Dim PrevSheet As String
-	Dim Gauge As String
-	Dim PrevRow As Integer
+	PrevSheet = "IF(YEAR(F" & Row & ")<YEAR($B$6),""'Dec 31'!"",""'""&TEXT(F" & Row & ",""mmm d"")&""'!"")" 'Decideds whether to use the date in column F or Dec 31st
+	If ThisWorkbook.Sheets(SheetName).Cells(Row, "F").Formula = "=+B" & Row & "-1" Then _
+		PrevSheet = """'" & Format(CDate(SheetName) - 1, "mmm d") & "'!""" 'Daily and stream gauges are hardcoded.  This is mostly because the F column for high falls is different from the others
 
-	Dim Range As String
-	Dim StartPoint As Integer
-	Dim EndPoint As Integer
+	StartPoint = "MATCH(""Staff Gauge"",INDIRECT(" & PrevSheet & " & ""A:A"")" 'Assume it is a weekly gauge first
+	EndPoint = "MATCH(""Dam Operations:"",INDIRECT(" & PrevSheet & " & ""A:A"")"
 
-	If Row < FlowStart Then _
-		Exit Function 'If the row is out of bounds, do nothing
+	'If it isn't a weekly gauge, it is either a daily gauge or a stream gauge
+	If Row < WeeklyStart Then
+		EndPoint = StartPoint 'Weekly gauges start where daily gauges end
+		StartPoint = "MATCH(""Lake Gauge"",INDIRECT(" & PrevSheet & " & ""A:A"")" 'Assume it is daily gauge next, since that let's us use the above line
+	End If
 
-	With ThisWorkbook
-		Year = CInt(Format(Now, "yyyy"))
-		PrevYear = CInt(Format(.Sheets(SheetName).Cells(Row, "F").Value, "yyyy"))
-		PrevSheet = Format(.Sheets(SheetName).Cells(Row, "F").Value, "mmm d")
-		Gauge = .Sheets(SheetName).Cells(Row, "A").Value
+	'If it isn't a weekly gauge OR a daily gauge, it must be a stream gauge
+	If Row < DailyStart Then
+		EndPoint = StartPoint 'Daily gauges start where stream gauges end
+		StartPoint = "MATCH(""Stream Gauge"",INDIRECT(" & PrevSheet & " & ""A:A"")"
+	End If
 
-		If PrevYear < Year Then _
-			PrevSheet = "Dec 31"
-		If .Sheets(SheetName).Cells(Row, "F").Formula = "=+B" & Row & "-1" Then _
-			PrevSheet = Format(CDate(SheetName) - 1, "mmm d")
-		If Not SheetExists(PrevSheet) Then _
-			Exit Function
-		With .Sheets(PrevSheet)
-			StartPoint = Application.WorksheetFunction.Match("Staff Gauge", .Columns(1), 0)
-			EndPoint = Application.WorksheetFunction.Match("Dam Operations:", .Columns(1), 0)
+	PrevRow = "MATCH(A6,INDIRECT(" & PrevSheet & " & ""A"" & " & Startpoint & "+1 & "":A"" & " & Endpoint & "),0) + " & Startpoint & "" 'Get the row for the previous reading
 
-			If Row < DailyStart Then
-				StartPoint = Application.WorksheetFunction.Match("Stream Gauge", .Columns(1), 0)
-				EndPoint = Application.WorksheetFunction.Match("Lake Gauge", .Columns(1), 0)
-			ElseIf Row < WeeklyStart Then
-				StartPoint = Application.WorksheetFunction.Match("Lake Gauge", .Columns(1), 0)
-				EndPoint = Application.WorksheetFunction.Match("Staff Gauge", .Columns(1), 0)
-			End If
-
-			Range = "A" & StartPoint & ":A" & EndPoint
-			PrevRow = Application.WorksheetFunction.Match(Gauge, .Range(Range), 0) + StartPoint - 1
-		End With
-	End With
-	GetFormula = "=INDIRECT(""'" & PrevSheet & "'!E" & PrevRow & """)"
+	GetFormula = "=INDIRECT(" & PrevSheet & "&""E"" & " & PrevRow 'Get the previous reading
 End Function
 
 'This could REALLY be public and global scope, but I'm putting it in here since I don't know where else it will be used yet.
