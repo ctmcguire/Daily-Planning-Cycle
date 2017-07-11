@@ -66,28 +66,28 @@ Public WeeklyGauges(weeklyCount) As CGauge
 '**/
 Sub InitializeGauges()
 	Set Stage = New CGaugeSensor
-	Stage.CGaugeSensor StageName, "D", "B"
+	Stage.CGaugeSensor StageName, "D", 1
 
 	Set Flow = New CGaugeSensor
-	Flow.CGaugeSensor FlowName, "E", "H"
+	Flow.CGaugeSensor FlowName, "E", 3
 	
 	Set Level = New CGaugeSensor
-	Level.CGaugeSensor LevelName, "E", "B"
+	Level.CGaugeSensor LevelName, "E", 1
 
 	Set Rain24H = New CGaugeSensor
-	Rain24H.CGaugeSensor Rain24HName, "K", "E"
+	Rain24H.CGaugeSensor Rain24HName, "K", 2
 
 	Set Rain = New CGaugeSensor
-	Rain.CGaugeSensor RainName, "L", "Q"
+	Rain.CGaugeSensor RainName, "L", 6
 
 	Set ATemp = New CGaugeSensor
-	ATemp.CGaugeSensor ATempName, "K", "N"
+	ATemp.CGaugeSensor ATempName, "K", 5
 
 	Set WTemp = New CGaugeSensor
-	WTemp.CGaugeSensor WTempName, "M", "K"
+	WTemp.CGaugeSensor WTempName, "M", 4
 
 	Set Batt = New CGaugeSensor
-	Batt.CGaugeSensor BattName, "N", "T"
+	Batt.CGaugeSensor BattName, "N", 7
 
 
 	Dim i As Integer

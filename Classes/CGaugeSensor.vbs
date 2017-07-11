@@ -1,7 +1,7 @@
 'CGaugeSensor Class
 Private pName As String 'What value the gauge sensor measures (flow, level, precipitation, etc)
 Private pColumn As String 'Column where this sensor's data will appear in the table
-Private pRawCol As String 'Column where this sensor's data is retrieved from in raw1
+Private pRangeIndex As Integer 'Column where this sensor's data is retrieved from in raw1
 
 Private pInitialized
 
@@ -28,12 +28,12 @@ End Sub
 ' * 				Sensor.CGaugeSensor "Dave the intern", "D", "I"
 ' * The above example initializes the CGaugeSensor Sensor with a Name of "Dave the intern", a Column of "D", and a RawCol of "I"
 '**/
-Public Sub CGaugeSensor(Name As String, Column As String, RawCol As String)
+Public Sub CGaugeSensor(Name As String, Column As String, RangeIndex As Integer)
 	If pInitialized Then _
 		Exit Sub
 	pName = Name
 	pColumn = Column
-	pRawCol = RawCol
+	pRangeIndex = RangeIndex'Need to strip off "'Raw1'!" and the $'s
 
 	pInitialized = True
 End Sub
@@ -47,26 +47,45 @@ Public Property Get Name()
 End Property
 
 Public Function Value(ID As String)
+	Dim Range As String
+
+	Range = GetRange()
+
 	If pName = RainName Then
-		Value = Sum(ID)
+		Value = Sum(ID, Range)
 		Exit Function
 	End If
-	Value = GetData(ID, pRawCol & "1:" & pRawCol & "350")
+	Value = GetData(ID, Range)
+End Function
+
+Private Function GetRange()
+	Dim Range As String
+	Dim Colon As Integer
+	Dim Column As String
+	
+	Range = ThisWorkbook.Sheets("Raw1").Names("ExternalData_" & pRangeIndex)
+	Range = Replace(Range, "='Raw1'!", "")
+	Range = Replace(Range, "$", "")
+	Colon = InStr(Range, ":")
+	Column = Left(Right(Range, Len(Range) - Colon), 1)
+	GetRange = Column & Right(Range, Len(Range) - 1)
 End Function
 
 Private Function GetData(ID As String, Range As String)
 	GetData = Application.WorksheetFunction.Index(ThisWorkbook.Sheets("Raw1").Range(Range), (Application.WorksheetFunction.Match(ID, ThisWorkbook.Sheets("Raw1").Range(Range), 0) + 5))
 End Function
 
-Private Function Sum(ID As String)
+Private Function Sum(ID As String, Range As String)
+	Dim Column As String
+	Column = Left(Range, 1)
 	With ThisWorkbook.Sheets("Raw1")
-		If Not (.Range(pRawCol & (Application.WorksheetFunction.Match(ID, .Range(pRawCol & "1:" & pRawCol & "350"), 0) + 2))) = 7 Then
+		If Not (.Range(Column & (Application.WorksheetFunction.Match(ID, .Range(Range), 0) + 3))) = 7 Then
 			Sum = ""
 			Exit Function
 		End If
 
 		Dim Row As Integer
-		Row = Application.WorksheetFunction.Match(ID, .Range(pRawCol & "1:" & pRawCol & "350"), 0) + 5
-		Sum = Application.WorksheetFunction.Sum(.Range(pRawCol & Row, pRawCol & Row+12))
+		Row = Application.WorksheetFunction.Match(ID, .Range(Range), 0) + 6
+		Sum = Application.WorksheetFunction.Sum(.Range(Column & Row, Column & Row+12))
 	End With
 End Function
