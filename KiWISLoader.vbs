@@ -92,4 +92,9 @@ Sub KiWIS_Import(SheetName As String, InputDate As Date, Optional IsAuto As Bool
 		qt.Delete
 	Next
 
+	Dim nm As Name
+	For Each nm In ThisWorkbook.Sheets("Raw1").Names
+		nm.Delete
+	Next
+
 End Sub
