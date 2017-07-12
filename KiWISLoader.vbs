@@ -47,9 +47,6 @@ Sub KiWIS_Import(SheetName As String, InputDate As Date, Optional IsAuto As Bool
 	PrevDate = Format(DateAdd("d", -1, InputDate), "yyyy-mm-d")
 	PrevDate = "&from=" & PrevDate & "T00:00:00.000-05:00&to=" & PrevDate & "T23:59:59.000-05:00"
 
-	'The previously loaded data in 'Raw1' is deleted to make room for the new data.
-	ThisWorkbook.Sheets("Raw1").Range("A2:T500").ClearContents
-
 	'The base URL address is assigned to URL1.
 	URL1 = "http://waterdata.quinteconservation.ca/KiWIS/KiWIS?service=kisters&type=queryServices&request=getTimeseriesValues&datasource=0&format=html&metadata=true&md_returnfields=station_name,parametertype_name&dateformat=yyyy-MM-dd%27T%27HH:mm:ss&timeseriesgroup_id="
 
@@ -70,41 +67,9 @@ Sub KiWIS_Import(SheetName As String, InputDate As Date, Optional IsAuto As Bool
 		If Not ThisWorkbook.Sheets("Raw1").QueryTables("ExternalData_" & i+1).Connection = "URL;" & URL2 Then _
 			ThisWorkbook.Sheets("Raw1").QueryTables("ExternalData_" & i+1).Connection = "URL;" & URL2
 		ThisWorkbook.Sheets("Raw1").QueryTables("ExternalData_" & i+1).Refresh(False)
-'		With ThisWorkbook.Sheets("Raw1").QueryTables.Add(Connection:="URL;" & URL2, Destination:=ThisWorkbook.Sheets("Raw1").Cells(2, 3 * i + 1))
-'			.BackgroundQuery = True
-'			.TablesOnlyFromHTML = True
-'			On Error Resume Next
-'			.Refresh BackgroundQuery:=False
-'			If Err.Number <> 0 Then
-'				On Error Goto 0
-'				If Not IsAuto Then _
-'					MsgBox "KiWIS Loader has failed"
-'				Goto TheEnd
-'			End If
-'			On Error Goto 0
-'			.SaveData = True
-'		End With
 	Next i
 
 	Call DebugLogging.PrintMsg("KiWIS data successfully imported into Raw1.  Copying data into Worksheet...")
 	Call KiWIS2Excel.Raw1Import(SheetName)
 	Call DebugLogging.PrintMsg("Data copied into Worksheet.")
-	TheEnd:
-
-'	If ThisWorkbook.Sheets("Raw1").QueryTables.Count = 7 Then _
-'		Exit Function
-
-'	Call DebugLogging.PrintMsg("Removing connections...")
-'	'This loop removes all QueryTable connections so as to not bog down the worksheet and/or excel file.
-'	For Each qt In ThisWorkbook.Sheets("Raw1").QueryTables
-'		qt.Delete
-'	Next
-
-'	Call DebugLogging.PrintMsg("Removing related defined names...")
-'	Dim nm As Name
-'	For Each nm In ThisWorkbook.Sheets("Raw1").Names
-'		nm.Delete
-'	Next
-
-'	Call DebugLogging.PrintMsg("Defined names removed.")
 End Sub
