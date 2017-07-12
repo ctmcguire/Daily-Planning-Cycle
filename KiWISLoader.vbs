@@ -13,7 +13,6 @@ Sub KiWIS_Import(SheetName As String, InputDate As Date, Optional IsAuto As Bool
 	'The KiWISLoader module loads the html tables from the KiWIS server.
 	'The tables are loaded into sheet 'Raw1'.
 	'-----------------------------------------------------------------------------------------------------------------------------'
-
 	'The PrevDate variable is used to load the 24 hr precipitation data from the previous day.
 	Dim PrevDate As String
 	'The KiWISDate variable stores the requested date in a KiWIS friendly format.
@@ -68,33 +67,44 @@ Sub KiWIS_Import(SheetName As String, InputDate As Date, Optional IsAuto As Bool
 			URL2 = URL1 & TimeSeriesID(i) & Left(KiWISDate, 16) & "T" & Hour(InputDate) - 6 & ":00:00.000-05:00&to=" & Right(Left(KiWISDate, 16), 10) & "T" & Hour(InputDate) & ":00:00.000-05:00"
 		End If
 
-		With ThisWorkbook.Sheets("Raw1").QueryTables.Add(Connection:="URL;" & URL2, Destination:=ThisWorkbook.Sheets("Raw1").Cells(2, 3 * i + 1))
-			.BackgroundQuery = True
-			.TablesOnlyFromHTML = True
-			On Error Resume Next
-			.Refresh BackgroundQuery:=False
-			If Err.Number <> 0 Then
-				On Error Goto 0
-				If Not IsAuto Then _
-					MsgBox "KiWIS Loader has failed"
-				Goto TheEnd
-			End If
-			On Error Goto 0
-			.SaveData = True
-		End With
+		If Not ThisWorkbook.Sheets("Raw1").QueryTables("ExternalData_" & i+1).Connection = "URL;" & URL2 Then _
+			ThisWorkbook.Sheets("Raw1").QueryTables("ExternalData_" & i+1).Connection = "URL;" & URL2
+		ThisWorkbook.Sheets("Raw1").QueryTables("ExternalData_" & i+1).Refresh(False)
+'		With ThisWorkbook.Sheets("Raw1").QueryTables.Add(Connection:="URL;" & URL2, Destination:=ThisWorkbook.Sheets("Raw1").Cells(2, 3 * i + 1))
+'			.BackgroundQuery = True
+'			.TablesOnlyFromHTML = True
+'			On Error Resume Next
+'			.Refresh BackgroundQuery:=False
+'			If Err.Number <> 0 Then
+'				On Error Goto 0
+'				If Not IsAuto Then _
+'					MsgBox "KiWIS Loader has failed"
+'				Goto TheEnd
+'			End If
+'			On Error Goto 0
+'			.SaveData = True
+'		End With
 	Next i
 
+	Call DebugLogging.PrintMsg("KiWIS data successfully imported into Raw1.  Copying data into Worksheet...")
 	Call KiWIS2Excel.Raw1Import(SheetName)
+	Call DebugLogging.PrintMsg("Data copied into Worksheet.")
 	TheEnd:
 
-	'This loop removes all QueryTable connections so as to not bog down the worksheet and/or excel file.
-	For Each qt In ThisWorkbook.Sheets("Raw1").QueryTables
-		qt.Delete
-	Next
+'	If ThisWorkbook.Sheets("Raw1").QueryTables.Count = 7 Then _
+'		Exit Function
 
-	Dim nm As Name
-	For Each nm In ThisWorkbook.Sheets("Raw1").Names
-		nm.Delete
-	Next
+'	Call DebugLogging.PrintMsg("Removing connections...")
+'	'This loop removes all QueryTable connections so as to not bog down the worksheet and/or excel file.
+'	For Each qt In ThisWorkbook.Sheets("Raw1").QueryTables
+'		qt.Delete
+'	Next
 
+'	Call DebugLogging.PrintMsg("Removing related defined names...")
+'	Dim nm As Name
+'	For Each nm In ThisWorkbook.Sheets("Raw1").Names
+'		nm.Delete
+'	Next
+
+'	Call DebugLogging.PrintMsg("Defined names removed.")
 End Sub
