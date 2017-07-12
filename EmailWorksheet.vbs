@@ -16,7 +16,7 @@ Sub DailyEmail()
 
 	'change the page setup, this way the pdf is formatted clearly
 	Application.PrintCommunication = False
-	With ActiveSheet.PageSetup
+	With ThisWorkbook.Sheets(date1).PageSetup
 		.Orientation = xlPortrait
 		.Zoom = False
 		.FitToPagesTall = 1
