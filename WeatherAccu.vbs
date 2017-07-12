@@ -88,7 +88,7 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 
 		'Cuts the extra HTML code.
 		If InStr(HTML_Data, "<!-- /.feed-controls -->") > 0 Then
-		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<!-- /.feed-controls -->"), Len(HTML_Data))
+			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<!-- /.feed-controls -->"), Len(HTML_Data))
 		End If
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
