@@ -39,8 +39,8 @@ Private Sub CmdButton_Submit_Click()
 	'-----------------------------------------------------------------------------------------------------------------------------'
 	'The date submitted through the Date Picker control is used to assign values to the public variable InputDate that is defined in the DPCupdate module.
 	'The format function is used to reformat the submitted date for readability in Excel.
-	InputDay = Format(DatePicker.DTPicker1.Value, "mmm d")
-	InputNumber = DatePicker.DTPicker1.Value + TimeSerial(6, 0, 0)
+	SheetName = Format(DatePicker.DTPicker1.Value, "mmm d")
+	SheetDay = DatePicker.DTPicker1.Value + TimeSerial(6, 0, 0)
 
 	'The form is unloaded to free up memory.
 	Unload Me
