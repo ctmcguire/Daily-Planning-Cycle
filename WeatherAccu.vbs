@@ -233,6 +233,13 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 	End With
 End Sub
 
+Sub GeneralScraper(SheetName As String, LocationURL As String, Optional RowNo As Integer = 0)
+	If RowNo = 0 Then _
+		RowNo = NextWeather
+	Call AccuWeatherScraper(SheetName, "http://www.accuweather.com/en/ca/" & LocationURL, RowNo)
+	NextWeather = RowNo + AccuCount + 2
+End Sub
+
 Sub CPScraper(SheetName As String)
 	Call AccuWeatherScraper(SheetName, "http://www.accuweather.com/en/ca/carleton-place/k7c/daily-weather-forecast/55438", AccuStart)
 End Sub

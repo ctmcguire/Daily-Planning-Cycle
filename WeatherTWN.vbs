@@ -10,7 +10,7 @@ Private Function SendXML(xmlhttp As Object) As Integer
 	SendXML = 0
 End Function
 
-Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset As String)
+Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset As Integer)
 	'-----------------------------------------------------------------------------------------------------------------------------'
 	'Please send any questions or feedback to cmcguire@mvc.on.ca
 	'-----------------------------------------------------------------------------------------------------------------------------'
@@ -220,6 +220,13 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 		Set xmlhttp = Nothing
 
 	End With
+End Sub
+
+Sub GeneralScraper(SheetName As String, LocationURL As String, Optional RowNo As Integer = 0)
+	If RowNo = 0 Then _
+		RowNo = NextWeather
+	Call TWNWeatherScraper(SheetName, "http://legacyweb.theweathernetwork.com/dataaccess/citypage/json/" & LocationURL, RowNo)
+	NextWeather = RowNo + TWNCount + 2
 End Sub
 
 Sub CPScraper(SheetName As String)

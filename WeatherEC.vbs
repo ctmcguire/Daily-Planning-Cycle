@@ -44,36 +44,36 @@ Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset A
 		'-----------------------------------------------------------------------------------------------------------------------------'
 
 		Data(0) = "Observed at:"
-		Cell(0) = "B" & (DayOffset - 5)
+		Cell(0) = "B" & (DayOffset + 1)
 
 		Data(1) = "Condition:"
-		Cell(1) = "B" & (DayOffset - 4)
+		Cell(1) = "B" & (DayOffset + 2)
 
 		Data(2) = "Temperature:"
-		Cell(2) = "B" & (DayOffset - 3)
+		Cell(2) = "B" & (DayOffset + 3)
 
 		Data(3) = "Pressure / Tendency:"
-		Cell(3) = "E" & (DayOffset - 3)
+		Cell(3) = "E" & (DayOffset + 3)
 
 		Data(4) = "Visibility:"
-		Cell(4) = "E" & (DayOffset - 2)
+		Cell(4) = "E" & (DayOffset + 4)
 
 		Data(5) = "Humidity:"
-		Cell(5) = "E" & (DayOffset - 1)
+		Cell(5) = "E" & (DayOffset + 5)
 
 		Data(6) = "Wind Chill:"
-		Cell(6) = "B" & (DayOffset - 2)
+		Cell(6) = "B" & (DayOffset + 4)
 
 		Data(7) = "Dewpoint:"
-		Cell(7) = "H" & (DayOffset - 3)
+		Cell(7) = "H" & (DayOffset + 3)
 
 		Data(8) = "Wind:"
-		Cell(8) = "H" & (DayOffset - 2)
+		Cell(8) = "H" & (DayOffset + 4)
 
 		Data(9) = "Air Quality Health Index:"
-		Cell(9) = "B" & (DayOffset - 1)
+		Cell(9) = "B" & (DayOffset + 5)
 
-		If .Sheets(SheetName).Range("B" & (DayOffset - 6)).Value <> "" And .Sheets(SheetName).Range("B" & (DayOffset - 6)).Value <> "No Response from Environment Canada" Then _
+		If .Sheets(SheetName).Range("B" & (DayOffset)).Value <> "" And .Sheets(SheetName).Range("B" & (DayOffset)).Value <> "No Response from Environment Canada" Then _
 			Exit Sub
 
 		''''''''''Loads the web data into VBA'''''''''''''
@@ -90,7 +90,7 @@ Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset A
 		'Send the data as name/value pairs
 		If SendXML(xmlhttp) <> 0 Then
 			Set xmlhttp = Nothing
-			.Sheets(SheetName).Range("B" & (DayOffset - 6)).Value = "No Response from Environment Canada"
+			.Sheets(SheetName).Range("B" & (DayOffset)).Value = "No Response from Environment Canada"
 			Exit Sub
 		End If
 		'Pauses the module while the web data loads.
@@ -115,7 +115,7 @@ Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset A
 		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<title>") + 7, Len(HTML_Data))
 		DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "</title>") - 1)
 		'The SheetName variable is recieved from the datepicker in the 'Update' form.
-		.Sheets(SheetName).Range("B" & (DayOffset - 6)).Value = DataString
+		.Sheets(SheetName).Range("B" & (DayOffset)).Value = DataString
 
 		For i = 0 to UBound(Data)
 			DataString = "N/A" 'Default value in case some of the data (specifically wind chill) isn't in the html string
@@ -143,7 +143,7 @@ Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset A
 		''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
 		For i = 1 to 13
-			Day = DayOffset + i
+			Day = DayOffset + 6 + i
 
 			'Isolates the 7 day forecast day.
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<title>") + 7, Len(HTML_Data))
@@ -159,12 +159,19 @@ Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset A
 		'Isolates the Long Term Forecast time issued.
 		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "Forecast") + 0, Len(HTML_Data))
 		DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "</summary>") - 1)
-		.Sheets(SheetName).Range("A" & DayOffset).Value = DataString
+		.Sheets(SheetName).Range("A" & DayOffset + 6).Value = DataString
 
 		'Once the 7th day's forecast is loaded, the xmlhttp is set to 'Nothing' to prevent caching and the module closes.
 		Set xmlhttp = Nothing
 
 	End With
+End Sub
+
+Sub GeneralScraper(SheetName As String, LocationURL As String, Optional RowNo As Integer = 0)
+	If RowNo = 0 Then _
+		RowNo = NextWeather
+	Call ECWeatherScraper(SheetName, "http://weather.gc.ca/rss/city/" & LocationURL & ".xml", RowNo)
+	NextWeather = RowNo + ECCount + 2
 End Sub
 
 Sub OttawaScraper(SheetName As String)
