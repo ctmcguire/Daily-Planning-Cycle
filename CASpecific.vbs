@@ -114,208 +114,208 @@ Sub InitializeGauges()
 
 
 	i = 0
-	FlowGauges(i).CGauge "Myers Cave flow", "Gauge - Mississippi River below Marble Lake"
+	FlowGauges(i).CGauge "Gauge - Mississippi River below Marble Lake", "Myers Cave flow"
 	FlowGauges(i).Add Stage, Flow, Rain24H, Rain, Batt
 	i = i + 1
 
-	FlowGauges(i).CGauge "Buckshot Creek flow", "Gauge - Buckshot Creek near Plevna"
+	FlowGauges(i).CGauge "Gauge - Buckshot Creek near Plevna", "Buckshot Creek flow"
 	FlowGauges(i).Add Stage, Flow, Rain24H, Rain, Batt
 	i = i + 1
 
-	FlowGauges(i).CGauge "Ferguson Falls flow", "Gauge - Mississippi River at Ferguson Falls"
+	FlowGauges(i).CGauge "Gauge - Mississippi River at Ferguson Falls", "Ferguson Falls flow"
 	FlowGauges(i).Add Stage, Flow, Rain24H, Rain, Batt
 	i = i + 1
 
-	FlowGauges(i).CGauge "Appleton flow", "Gauge - Mississippi River at Appleton"
+	FlowGauges(i).CGauge "Gauge - Mississippi River at Appleton", "Appleton flow"
 	FlowGauges(i).Add Stage, Flow, Rain24H, Rain, Batt
 	i = i + 1
 
-	FlowGauges(i).CGauge "Gordon Rapids flow", "Gauge - Clyde River at Gordon Rapids"
+	FlowGauges(i).CGauge "Gauge - Clyde River at Gordon Rapids", "Gordon Rapids flow"
 	FlowGauges(i).Add Stage, Flow, Rain24H, Rain, Batt
 	i = i + 1
 
-	FlowGauges(i).CGauge "Lanark stream flow", "Gauge - Clyde River near Lanark"
+	FlowGauges(i).CGauge "Gauge - Clyde River near Lanark", "Lanark stream flow"
 	FlowGauges(i).Add Stage, Flow, Rain24H, Rain, Batt
 	i = i + 1
 
-	FlowGauges(i).CGauge "Mill of Kintail flow", "Gauge - Indian River near Blakeney"
+	FlowGauges(i).CGauge "Gauge - Indian River near Blakeney", "Mill of Kintail flow"
 	FlowGauges(i).Add Stage, Flow, Rain24H, Rain, Batt
 	i = i + 1
 
-	FlowGauges(i).CGauge "Kinburn flow", "Gauge - Carp River near Kinburn"
+	FlowGauges(i).CGauge "Gauge - Carp River near Kinburn", "Kinburn flow"
 	FlowGauges(i).Add Stage, Flow, Rain24H, Rain, Batt
 	i = i + 1
 
-	FlowGauges(i).CGauge "Bennett Lake outflow", "Gauge - Fall River at outlet Bennett Lake"
+	FlowGauges(i).CGauge "Gauge - Fall River at outlet Bennett Lake", "Bennett Lake outflow"
 	FlowGauges(i).Add Stage, Flow, Rain24H, Rain, Batt
 	i = i + 1
 
-	FlowGauges(i).CGauge "Dalhousie Lk outflow", "Gauge - Mississippi River at outlet Dalhousie Lake"
+	FlowGauges(i).CGauge "Gauge - Mississippi River at outlet Dalhousie Lake", "Dalhousie Lk outflow"
 	FlowGauges(i).Add Stage, Flow, Rain24H, Rain, Batt
 	i = i + 1
 
-	FlowGauges(i).CGauge "High Falls Flow", "Gauge - Mississippi High Falls"
+	FlowGauges(i).CGauge "Gauge - Mississippi High Falls", "High Falls Flow"
 	i = i + 1
 
-	FlowGauges(i).CGauge "Poole Creek at Maple Grove", "Gauge - Poole Creek at Maple Grove"
+	FlowGauges(i).CGauge "Gauge - Poole Creek at Maple Grove", "Poole Creek at Maple Grove"
 	FlowGauges(i).Add Stage, Flow, Batt
 	i = i + 1
 
-	FlowGauges(i).CGauge "Carp River at Richardson", "Gauge - Carp River at Richardson"
+	FlowGauges(i).CGauge "Gauge - Carp River at Richardson", "Carp River at Richardson"
 	FlowGauges(i).Add Stage, Flow, Batt
 	i = i + 1
 
 
 	i = 0
-	DailyGauges(i).CGauge "Shabomeka Lake", "Gauge - Shabomeka Lake"
+	DailyGauges(i).CGauge "Gauge - Shabomeka Lake", "Shabomeka Lake"
 	DailyGauges(i).Add Level, Rain24H, Rain, Batt
 	i = i + 1
 
-	DailyGauges(i).CGauge "Mazinaw Lake", "Gauge - Mazinaw Lake"
+	DailyGauges(i).CGauge "Gauge - Mazinaw Lake", "Mazinaw Lake"
 	DailyGauges(i).Add Level, WTemp, Batt
 	i = i + 1
 
-	DailyGauges(i).CGauge "Kashwakamak Lake", "Gauge - Kashwakamak Lake Gauge"
+	DailyGauges(i).CGauge "Gauge - Kashwakamak Lake Gauge", "Kashwakamak Lake"
 	DailyGauges(i).Add Level, ATemp, WTemp, Batt
 	i = i + 1
 
-	DailyGauges(i).CGauge "Farm Lake", "Gauge - Mississippi River at outlet Farm Lake"
+	DailyGauges(i).CGauge "Gauge - Mississippi River at outlet Farm Lake", "Farm Lake"
 	DailyGauges(i).Add Level, WTemp, Batt
 	i = i + 1
 
-	DailyGauges(i).CGauge "Mississagagon Lake", "Gauge - Mississagagon Lake"
+	DailyGauges(i).CGauge "Gauge - Mississagagon Lake", "Mississagagon Lake"
 	DailyGauges(i).Add Level, WTemp, Batt
 	i = i + 1
 
-	DailyGauges(i).CGauge "Big Gull Lake", "Gauge - Big Gull Lake"
+	DailyGauges(i).CGauge "Gauge - Big Gull Lake", "Big Gull Lake"
 	DailyGauges(i).Add Level, WTemp, Batt
 	i = i + 1
 
-	DailyGauges(i).CGauge "Crotch Lake", "Gauge - Crotch Lake GOES"
+	DailyGauges(i).CGauge "Gauge - Crotch Lake GOES", "Crotch Lake"
 	DailyGauges(i).Add Level, Rain24H, Rain, Batt
 	i = i + 1
 
-	DailyGauges(i).CGauge "High Falls", "Gauge - Mississippi High Falls"
+	DailyGauges(i).CGauge "Gauge - Mississippi High Falls", "High Falls"
 	i = i + 1
 
-	DailyGauges(i).CGauge "Dalhousie Lake", "Gauge - Mississippi River at outlet Dalhousie Lake"
+	DailyGauges(i).CGauge "Gauge - Mississippi River at outlet Dalhousie Lake", "Dalhousie Lake"
 	i = i + 1
 
-	DailyGauges(i).CGauge "Palmerston Lake", "Gauge - Palmerston Lake"
+	DailyGauges(i).CGauge "Gauge - Palmerston Lake", "Palmerston Lake"
 	DailyGauges(i).Add Level, Rain24H, Rain, WTemp, Batt
 	i = i + 1
 
-	DailyGauges(i).CGauge "Canonto Lake", "Gauge - Canonto Lake"
+	DailyGauges(i).CGauge "Gauge - Canonto Lake", "Canonto Lake"
 	DailyGauges(i).Add Level, WTemp, Batt
 	i = i + 1
 
-	DailyGauges(i).CGauge "Lanark", "Gauge - Lanark"
+	DailyGauges(i).CGauge "Gauge - Lanark", "Lanark"
 	DailyGauges(i).Add Level, WTemp, Batt
 	i = i + 1
 
-	DailyGauges(i).CGauge "Sharbot Lake", "Gauge - Fall River at outlet Sharbot Lake"
+	DailyGauges(i).CGauge "Gauge - Fall River at outlet Sharbot Lake", "Sharbot Lake"
 	DailyGauges(i).Add Stage, Rain24H, Rain, Batt
 	i = i + 1
 
-	DailyGauges(i).CGauge "Bennett Lake", "Gauge - Fall River at outlet Bennett Lake"
+	DailyGauges(i).CGauge "Gauge - Fall River at outlet Bennett Lake", "Bennett Lake"
 	i = i + 1
 
-	DailyGauges(i).CGauge "Mississippi Lake", "Gauge - Mississippi Lake"
+	DailyGauges(i).CGauge "Gauge - Mississippi Lake", "Mississippi Lake"
 	DailyGauges(i).Add Level, ATemp, Batt
 	i = i + 1
 
-	DailyGauges(i).CGauge "C.P. Dam", "Gauge - Carleton Place Dam"
+	DailyGauges(i).CGauge "Gauge - Carleton Place Dam", "C.P. Dam"
 	DailyGauges(i).Add Level, Batt
 	i = i + 1
 
-	DailyGauges(i).CGauge "Carp River at Maple Grove", "Gauge - Carp River at Maple Grove"
+	DailyGauges(i).CGauge "Gauge - Carp River at Maple Grove", "Carp River at Maple Grove"
 	DailyGauges(i).Add Level, Rain24H, Rain, Batt
 	i = i + 1
 
-	DailyGauges(i).CGauge "Widow Lake", "Gauge - Widow Lake"
+	DailyGauges(i).CGauge "Gauge - Widow Lake", "Widow Lake"
 	i = i + 1
 
 
 	i = 0
-	WeeklyGauges(i).CGauge "Shabomeka Lake (weekly)"
+	WeeklyGauges(i).CGauge Name:="Shabomeka Lake (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Mazinaw Lake (weekly)"
+	WeeklyGauges(i).CGauge Name:="Mazinaw Lake (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Little Marble Lake (weekly)"
+	WeeklyGauges(i).CGauge Name:="Little Marble Lake (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Mississagagon Lake (weekly)"
+	WeeklyGauges(i).CGauge Name:="Mississagagon Lake (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Kashwakamak Lake (weekly)"
+	WeeklyGauges(i).CGauge Name:="Kashwakamak Lake (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Farm Lake (weekly)"
+	WeeklyGauges(i).CGauge Name:="Farm Lake (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Ardoch Bridge (weekly)"
+	WeeklyGauges(i).CGauge Name:="Ardoch Bridge (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Malcolm Lake (weekly)"
+	WeeklyGauges(i).CGauge Name:="Malcolm Lake (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Pine Lake (weekly)"
+	WeeklyGauges(i).CGauge Name:="Pine Lake (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Big Gull Lake (weekly)"
+	WeeklyGauges(i).CGauge Name:="Big Gull Lake (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Buckshot Lake (weekly)"
+	WeeklyGauges(i).CGauge Name:="Buckshot Lake (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Crotch Lake (weekly)"
+	WeeklyGauges(i).CGauge Name:="Crotch Lake (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "High Falls G.S. (weekly)"
+	WeeklyGauges(i).CGauge Name:="High Falls G.S. (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Mosque Lake (weekly)"
+	WeeklyGauges(i).CGauge Name:="Mosque Lake (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Summit Lake (weekly)"
+	WeeklyGauges(i).CGauge Name:="Summit Lake (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Palmerston Lake (weekly)"
+	WeeklyGauges(i).CGauge Name:="Palmerston Lake (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Canonto Lake (weekly)"
+	WeeklyGauges(i).CGauge Name:="Canonto Lake (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Bennett Lake (weekly)"
+	WeeklyGauges(i).CGauge Name:="Bennett Lake (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Dalhousie Lake (weekly)"
+	WeeklyGauges(i).CGauge Name:="Dalhousie Lake (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Silver Lake (weekly)"
+	WeeklyGauges(i).CGauge Name:="Silver Lake (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Sharbot Lake (weekly)"
+	WeeklyGauges(i).CGauge Name:="Sharbot Lake (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Widow Lake (weekly)"
+	WeeklyGauges(i).CGauge Name:="Widow Lake (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Lanark Bridge (weekly)"
+	WeeklyGauges(i).CGauge Name:="Lanark Bridge (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Lanark Dam (weekly)"
+	WeeklyGauges(i).CGauge Name:="Lanark Dam (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Almonte Bridge (weekly)"
+	WeeklyGauges(i).CGauge Name:="Almonte Bridge (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "Clayton Lake (weekly)"
+	WeeklyGauges(i).CGauge Name:="Clayton Lake (weekly)"
 	i = i + 1
 
-	WeeklyGauges(i).CGauge "C.P. Dam (weekly)"
+	WeeklyGauges(i).CGauge Name:="C.P. Dam (weekly)"
 	i = i + 1
 End Sub
 
