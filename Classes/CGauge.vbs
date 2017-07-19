@@ -37,7 +37,7 @@ End Sub
 ' * 				Gauge.CGauge "Keith (weekly)"
 ' * The above example sets the CGauge object Gauge's name to "Keith", and sets its id to "N/A"
 '**/
-Public Sub CGauge(Name As String, Optional ID As String = "N/A")
+Public Sub CGauge(Optional ID As String = "N/A", Optional Name As String = "")
 	If pInitialized Then _
 		Exit Sub
 	pName = Name
@@ -48,10 +48,16 @@ Public Sub CGauge(Name As String, Optional ID As String = "N/A")
 End Sub
 
 Public Property Get Name() As String
+	Name = ""
+	If Not pInitialized Then _
+		Exit Function
 	Name = pName
 End Property
 
 Public Property Get ID() As String
+	ID = ""
+	If Not pInitialized Then _
+		Exit Function
 	ID = pID
 End Property
 
@@ -75,6 +81,8 @@ End Property
 ' * some non-negative number)
 '**/
 Public Sub Add(ParamArray Sensors() As Variant)
+	If Not pInitialized Then _
+		Exit Sub
 	Dim Sensor As Variant
 	For Each Sensor In Sensors
 		pSensors.Add Sensor, Sensor.Name
@@ -82,10 +90,14 @@ Public Sub Add(ParamArray Sensors() As Variant)
 End Sub
 
 Public Function Remove(Name As String)
+	If Not pInitialized Then _
+		Exit Function
 	pSensors.Remove(Name)
 End Function
 
 Public Sub LoadData(SheetName As String, Row As Integer)
+	If Not pInitialized Then _
+		Exit Sub
 	With ThisWorkbook.Sheets(SheetName)
 		'.Cells(Row, "G").Formula = GetFormula(SheetName, Row) 'I'm commenting this out for now to avoid confusion caused by having the previous reading formulas being set both here and in Raw2
 		If pID = "N/A" Then _
@@ -127,17 +139,4 @@ Private Function GetFormula(SheetName As String, Row As Integer)
 	PrevRow = "MATCH(A6,INDIRECT(" & PrevSheet & " & ""A"" & " & Startpoint & "+1 & "":A"" & " & Endpoint & "),0) + " & Startpoint & "" 'Get the row for the previous reading
 
 	GetFormula = "=INDIRECT(" & PrevSheet & "&""E"" & " & PrevRow 'Get the previous reading
-End Function
-
-'This could REALLY be public and global scope, but I'm putting it in here since I don't know where else it will be used yet.
-Private Function SheetExists(SheetName As String)
-	SheetExists = True 'Returned if the sheet is found
-
-	Dim ws As Excel.WorkSheet
-	For Each ws In ThisWorkbook.Sheets
-		If ws.Name = SheetName Then _
-			Exit Function
-	Next
-
-	SheetExists = False 'If we've gotten here, we didn't find the worksheet so we should return false instead
 End Function
