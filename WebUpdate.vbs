@@ -2,7 +2,7 @@ Option Explicit
 
 'The sheetdate variable is defined as cell B6 on the sheet that the Update Website button was pressed.
 'This is defined in the 'Assign Macro' formula.
-Sub Run_WebUpdate(sheetdate As String)
+Sub Run_WebUpdate(sheetdate As String, Optional IsAuto As Boolean = False)
 	'-----------------------------------------------------------------------------------------------------------------------------'
 	'Please send any questions or feedback to cmcguire@mvc.on.ca
 	'-----------------------------------------------------------------------------------------------------------------------------'
@@ -30,7 +30,7 @@ Sub Run_WebUpdate(sheetdate As String)
 	'Debug_Text.Show
 	'-----------------------------------------------------------------------------------------------------------------------------'
 
-	Call Gauges.InitializeGauges
+	Call CASpecific.InitializeGauges
 	'The Status Bar is located on the bottom left corner of the Excel window.  It's default status is 'READY'.
 	'The Status Bar Displays 'Processing Request...' until the UpdateDPC subroutine has ended.
 	Application.StatusBar = "Processing Request..."
@@ -73,7 +73,8 @@ Sub Run_WebUpdate(sheetdate As String)
 
 		LevelsConn.Close
 
-		MsgBox "The requested data has been uploaded to the website. Please visit: http://mvc.on.ca/water-levels-app/levels-table-option/ataglance.php to ensure accuracy."
+		If Not IsAuto Then _
+			MsgBox "The requested data has been uploaded to the website. Please visit: http://mvc.on.ca/water-levels-app/levels-table-option/ataglance.php to ensure accuracy."
 
 		'The previously adjusted modes are returned to their default state.
 		Application.StatusBar = False
