@@ -5,7 +5,7 @@ Option Explicit
 'DailyUpdate runs the modules that load a new sheet and populate it with the requested data.
 Public Function DailyUpdate()
 	Call DebugLogging.PrintMsg("Creating CGauge and CGaugeSensor Objects...")
-	Call Gauges.InitializeGauges
+	Call CASpecific.InitializeGauges
 	Call DebugLogging.PrintMsg("Finished creating CGauge and CGaugeSensor Objects.")
 	'-------------------------------------------------------------------------------------------------------------------------------------------------'
 	'The 'DPCsheet' variable is used to check if the requested sheet already exists.

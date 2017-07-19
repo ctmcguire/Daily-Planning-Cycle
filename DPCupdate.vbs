@@ -2,28 +2,23 @@ Option Explicit
 
 
 'NOTE: Most of the Constant values used by UpdateDPC are created in the Gauges Macro
+
+Public NextWeather As Integer
+
 Public Const AccuCount As Integer = 5
 Public Const TWNCount As Integer = 15
-Public Const ECCount As Integer = 13
+Public Const ECCount As Integer = 19
 
-Public Const flowStart As Integer = 6
-Public Const dailyStart As Integer = flowStart + flowCount + 5
-Public Const weeklyStart As Integer = dailyStart + dailyCount + 4
 Public Const AccuStart As Integer = weeklyStart + weeklyCount + 12
 Public Const TWNStart As Integer = AccuStart + AccuCount + 2
-Public Const ECStart As Integer = TWNStart + TWNCount + 8
+Public Const ECStart As Integer = TWNStart + TWNCount + 2
 Public Const CloyneAccuStart As Integer = ECStart + ECCount + 2
 Public Const CloyneTWNStart As Integer = CloyneAccuStart + AccuCount + 2
 
-
-'The date picker assigns a value to the public variable 'InputDay'.
+'The date picker assigns a value to the public variable 'SheetName'.
 'The variable is public so that it can be used by all the called functions.
-Public InputDay As String
-Public InputNumber As Date
-'The date picker assigns a value to the public variable 'InputHour'.
-'The variable is public so that it can be used by all the called functions.
-Public InputTime As String
-Public InputHour As Date
+Public SheetName As String
+Public SheetDay As Date
 
 Private Sub Start()
 	'The Status Bar is located on the bottom left corner of the Excel window.  It's default status is 'READY'.
@@ -42,29 +37,29 @@ End Sub
 Sub UpdateDPCByDate()
 
 	Call Start
-	InputDay = "cancel" 'If no date is chosen, this variable is assigned to exit the macro.
+	SheetName = "cancel" 'If no date is chosen, this variable is assigned to exit the macro.
 	'-------------------------------------------------------------------------------------------------------------------------------------------------'
 	'Instructions to install the Date Picker control can be found by right clicking on the 'DatePicker' form and selecting 'View Code'.
 	DatePicker.Show 'The Date Picker form is shown and the user inputs a date.
 
-	Call UpdateDPC(InputDay, InputNumber)
+	Call UpdateDPC(SheetName, SheetDay)
 End Sub
 
 Sub UpdateDPCByHour()
 	Call Start
-	InputTime = "cancel" 'If no time is chosen, this variable is assigned to exit the macro.
+	SheetName = "cancel" 'If no time is chosen, this variable is assigned to exit the macro.
 	'-------------------------------------------------------------------------------------------------------------------------------------------------'
 	'Instructions to install the Date Picker control can be found by right clicking on the 'DatePicker' form and selecting 'View Code'.
 	HourPicker.Show 'The Date Picker form is shown and the user inputs a date.
 
-	Call UpdateDPC(InputTime, InputHour)
+	Call UpdateDPC(SheetName, SheetDay)
 End Sub
 
 '-------------------------------------------------------------------------------------------------------------------------------------------------'
 'The UpdateDPC subroutine is run when the Update DPC button is pressed on sheet 'Raw1'
 'UpdateDPC runs the modules that load a new sheet and populate it with the requested data.
 Sub UpdateDPC(SheetName As String, SheetNo As Date)
-	Call Gauges.InitializeGauges
+	Call CASpecific.InitializeGauges
 	'-------------------------------------------------------------------------------------------------------------------------------------------------'
 	'Set everything back to the way it was before starting the macro and quietly exit if the datepicker/hourpicker was closed with the close button
 	If SheetName = "cancel" Then
@@ -77,7 +72,7 @@ Sub UpdateDPC(SheetName As String, SheetNo As Date)
 	'This 'For' loop checks that the a sheet for the requested date does not already exist.
 	For Each DPCsheet In ThisWorkbook.Worksheets
 		If DPCsheet.name = SheetName Then
-			If (Not InputNumber = 0) And SheetNo < 42873 Then 'This If statement only matters if this was called by UpdateDPCByDate
+			If (Not SheetDay = 0) And SheetNo < 42873 Then 'This If statement only matters if this was called by UpdateDPCByDate
 				MsgBox "The sheet layout changed on May 18th.  Sheets loaded before this day cannot be updated.  This update attempt will now exit."
 				Call Finish
 				Exit Sub
@@ -101,12 +96,9 @@ Sub UpdateDPC(SheetName As String, SheetNo As Date)
 	Call KiWISLoader.KiWIS_Import(SheetName, SheetNo)
 
 	'The Weather... modules scrape weather data from AccuWeather, Environment Canada and The Weather Network and pastes it into the new sheet.
+	NextWeather = WeeklyStart + WeeklyCount + DataToWeatherGap
 	If Answer = 0 Then
-		Call WeatherAccu.CPScraper(SheetName)
-		Call WeatherEC.OttawaScraper(SheetName)
-		Call WeatherTWN.CPScraper(SheetName)
-		Call WeatherAccu.CloyneScraper(SheetName)
-		Call WeatherTWN.CloyneScraper(SheetName)
+		Call CASpecific.LoadWeather(SheetName)
 	End If
 
 	'The DataProtector module locks cells for editing and saves a backup of the daily planning cycle to the local desktop and the Water Management Files folder.
