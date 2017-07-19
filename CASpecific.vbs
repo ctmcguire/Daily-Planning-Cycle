@@ -1,5 +1,7 @@
 Option Explicit
 
+Public Const SensorCount As Integer = 7
+
 Private Stage As CGaugeSensor
 Private Flow As CGaugeSensor
 Private Level As CGaugeSensor
@@ -25,6 +27,15 @@ public const weeklyCount as integer = 26
 Public FlowGauges(flowCount) As CGauge
 Public DailyGauges(dailyCount) As CGauge
 Public WeeklyGauges(weeklyCount) As CGauge
+
+Public Const FlowOffset As Integer = 6 'Set this to the first row that gets KiWIS data
+Public Const FlowToDailyGap As Integer = 5 'Set this to one more than the number of rows between the last flow gauge and first daily lake gauge
+Public Const DailyToWeeklyGap As Integer = 4 'Set this to one more than the number of rows between the last daily lake gauge and first weekly lake gauge
+
+Public Const flowStart As Integer = FlowOffset
+Public Const dailyStart As Integer = flowStart + flowCount + FlowToDailyGap
+Public Const weeklyStart As Integer = dailyStart + dailyCount + DailyToWeeklyGap
+Public Const DataToWeatherGap As Integer = 12
 
 
 '/**
@@ -65,29 +76,29 @@ Public WeeklyGauges(weeklyCount) As CGauge
 ' * 		2.  Move the respective row in Raw2 to finish changing the Gauge's row
 '**/
 Sub InitializeGauges()
-	Set Stage = New CGaugeSensor
-	Stage.CGaugeSensor StageName, "D", 1
-
 	Set Flow = New CGaugeSensor
-	Flow.CGaugeSensor FlowName, "E", 3
+	Flow.CGaugeSensor FlowName, "E", 3, 124004
 	
 	Set Level = New CGaugeSensor
-	Level.CGaugeSensor LevelName, "E", 1
+	Level.CGaugeSensor LevelName, "E", 1, 91667
+
+	Set Stage = New CGaugeSensor
+	Stage.Clone Level, "D"
 
 	Set Rain24H = New CGaugeSensor
-	Rain24H.CGaugeSensor Rain24HName, "K", 2
+	Rain24H.CGaugeSensor Rain24HName, "K", 2, 123967, "00:00:00.000-05:00", , "23:59:59.000-05:00", True
 
 	Set Rain = New CGaugeSensor
-	Rain.CGaugeSensor RainName, "L", 6
+	Rain.CGaugeSensor RainName, "L", 6, 127937, "<InDate>:00:00.000-05:00", 6, "<InDate>:00:00.000-05:00", , True
 
 	Set ATemp = New CGaugeSensor
-	ATemp.CGaugeSensor ATempName, "K", 5
+	ATemp.CGaugeSensor ATempName, "K", 5, 124035
 
 	Set WTemp = New CGaugeSensor
-	WTemp.CGaugeSensor WTempName, "M", 4
+	WTemp.CGaugeSensor WTempName, "M", 4, 124025
 
 	Set Batt = New CGaugeSensor
-	Batt.CGaugeSensor BattName, "N", 7
+	Batt.CGaugeSensor BattName, "N", 7, 291931
 
 
 	Dim i As Integer
@@ -306,4 +317,13 @@ Sub InitializeGauges()
 
 	WeeklyGauges(i).CGauge "C.P. Dam (weekly)"
 	i = i + 1
+End Sub
+
+
+Sub LoadWeather(SheetName As String)
+Call WeatherAccu.GeneralScraper(SheetName, "carleton-place/k7c/daily-weather-forecast/55438")
+	Call WeatherTWN.GeneralScraper(SheetName, "caon0119")
+	Call WeatherEC.GeneralScraper(SheetName, "on-118_e")
+	Call WeatherAccu.GeneralScraper(SheetName, "cloyne/k0h/daily-weather-forecast/2291535")
+	Call WeatherTWN.GeneralScraper(SheetName, "caon2071")
 End Sub
