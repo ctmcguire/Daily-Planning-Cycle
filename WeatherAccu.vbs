@@ -32,8 +32,8 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 	Dim Day As Integer
 	'The Temp variable is used to store the temperature data
 	Dim Temp As String
-	'The URL variable reduces the chance of error when cycling through the precipitation pages.
-	Dim URL As String
+	'The Url variable reduces the chance of error when cycling through the precipitation pages.
+	Dim Url As String
 	'The Day/Night variables are used to calculate total 24-hour precipitation, rain and snow.
 	Dim DayPrecip As Double
 	Dim DayRain As Double
@@ -49,62 +49,51 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 	Day = DayOffset
 	'The With statement is used to ensure the macro does not modify other workbooks that may be open.
 	With ThisWorkbook
-		If .Sheets(SheetName).Range("B" & Day).Value <> "No Response from AccuWeather" And .Sheets(SheetName).Range("B" & Day).Value <> "" Then _
-			Goto Forecast5Day
-		Call DebugLogging.PrintMsg("Getting general information for the next week (this part will probably be merged with the next part in the future).")
-		'-----------------------------------------------------------------------------------------------------------------------------'
-		''''''''''Loads the web data into VBA'''''''''''''
-		''''''''''''''''''''''''''''''''''''''''''''''''''
-		'Creates the xmlhttp object that interacts with the website. .ServerXMLHTTP60 is used so the page data is not cached.
-		Set xmlhttp = New MSXML2.ServerXMLHTTP60
-		'Indicates that page that will receive the request and the type of request being submitted.  Your location's link can be found by searching for your location at 'accuweather.com' and clicking 'Extended'.
-		xmlhttp.Open "GET", BaseUrl, False
-		'Indicate that the body of the request contains form data
-		xmlhttp.setRequestHeader "Content-Type", "text/xml; charset=utf-8"
-
-		Call DebugLogging.PrintMsg("Getting xml response...")
-
-		'Send the data as name/value pairs
-		If SendXML(xmlhttp) <> 0 Then
-			Set xmlhttp = Nothing
-			.Sheets(SheetName).Range("B" & Day).Value = "No Response from AccuWeather"
-			Goto Forecast5Day
-		End If
-		'Pauses the module while the web data loads.
-		While xmlhttp.READYSTATE <> 4
-			DoEvents
-		Wend
-		'Assigns the the website's HTML to the HTML_Data variable.
-		HTML_Data = xmlhttp.responseText
-
-		Call DebugLogging.PrintMsg("Xml response retrieved.  Parsing html String...")
+		'Adds a VBA time stamp to the weather since time is not published on the webpage.
+		.Sheets(SheetName).Range("B" & Day).Value = Format(Now, "yyyy-MM-d hh:mm:ss")
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
-		''''''''''Extracts the Forecast Location''''''''''''
-		''''''''''''''''''''''''''''''''''''''''''''''''''''
-		'Isolates the forecast location
-		'The InStr function searches the code for the string that precedes the current conditions observation time: 'timestampApp_local'.
-		'The InStr function then returns the number of characters from the start of the HTML code to the start of this string.
-		'The Mid function then deletes every character before this number.
-		'Chr(34) returns a double quotation mark (") and is used to prevent runtime errors.
-		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "class=" & Chr(34) & "current-city" & Chr(34) & "><h1>") + 25, Len(HTML_Data))
-		DataString = Mid(HTML_Data, 1, InStr(HTML_Data, ",") - 1) + " 2016 AccuWeather, Inc. All Rights Reserved."
-		'The SheetName variable is recieved from the datepicker in the 'Update' form
-		.Sheets(SheetName).Range("A" & Day).Value = DataString
+		''''''''''Extracts the 5 day forecasted data from separate pages'''''''''''''
+		'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-		'Cuts the extra HTML code.
-		If InStr(HTML_Data, "<!-- /.feed-controls -->") > 0 Then
-			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<!-- /.feed-controls -->"), Len(HTML_Data))
-		End If
+		Call DebugLogging.PrintMsg("Getting forecast for 5 days...")
 
-		'-----------------------------------------------------------------------------------------------------------------------------'
-		''''''''''Extracts the 5 Day Forecasted Highs and Lows'''''''''''''
-		'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-		'This for loop ensures the entire 5 day forecast is extracted before proceeding.
+		'The i variable navigates to the corresponding forecast day.
 		For i = 1 to 5
 			Day = DayOffset + i
 
+			'Your Location's link can be found by searching for your location at 'accuweather.com' and clicking 'Extended'.
+			Url = BaseUrl & "?day=" & i
+
+			If .Sheets(SheetName).Range("A" & Day).Value <> "No Response from AccuWeather" And .Sheets(SheetName).Range("E" & Day).Value <> "" Then _
+				Goto Continue
+
+			'Creates the xmlhttp object that interacts with the website. .ServerXMLHTTP60 is used so the page data is not cached.
+			Set xmlhttp = New MSXML2.ServerXMLHTTP60
+			With xmlhttp
+				.Open "GET", Url, False
+				.setRequestHeader "Content-Type", "text/xml; charset=utf-8"
+				If SendXML(xmlhttp) <> 0 Then
+					Set xmlhttp = Nothing
+					ThisWorkbook.Sheets(SheetName).Range("E" & Day).Value = "No Response from AccuWeather"
+					Goto Continue
+				End If
+				While .READYSTATE <> 4
+					DoEvents
+				Wend
+				HTML_Data = .responseText
+			End With
+
+			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "class=" & Chr(34) & "current-city" & Chr(34) & "><h1>") + 25, Len(HTML_Data))
+			DataString = Mid(HTML_Data, 1, InStr(HTML_Data, ",") - 1) + " 2016 AccuWeather, Inc. All Rights Reserved."
+			'The SheetName variable is recieved from the datepicker in the 'Update' form
+			.Sheets(SheetName).Range("A" & DayOffset).Value = DataString
+
+			If InStr(HTML_Data, "<!-- /.feed-controls -->") > 0 Then
+				HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<!-- /.feed-controls -->"), Len(HTML_Data))
+			End If
 			'Isolates the forecast date.
+			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, Url), Len(HTML_Data))
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<a href=" & Chr(34) & "#" & Chr(34) & ">") + 12, Len(HTML_Data))
 			DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "</a></h3>") - 1)
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<h4>") + 4, Len(HTML_Data))
@@ -126,50 +115,6 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<span class=" & Chr(34) & "cond" & Chr(34) & ">") + 19, Len(HTML_Data))
 			DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "</span>") - 1)
 			.Sheets(SheetName).Range("B" & Day).Value = DataString
-		next i
-		
-		'-----------------------------------------------------------------------------------------------------------------------------'
-		Day = DayOffset
-
-		'Adds a VBA time stamp to the weather since time is not published on the webpage.
-		.Sheets(SheetName).Range("B" & Day).Value = Format(DateTime.Now, "yyyy-MM-d hh:mm:ss")
-
-		Call DebugLogging.PrintMsg("Html String parsed.")
-
-		Set xmlhttp = Nothing 'Clears the object from memory
-
-		Forecast5Day:
-		'-----------------------------------------------------------------------------------------------------------------------------'
-		''''''''''Extracts the 5 day forecasted data from separate pages'''''''''''''
-		'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-
-		Call DebugLogging.PrintMsg("Getting forecast for 5 days...")
-
-		'The i variable navigates to the corresponding forecast day.
-		For i = 1 to 5
-			Day = DayOffset + i
-
-			'Your Location's link can be found by searching for your location at 'accuweather.com' and clicking 'Extended'.
-			URL = BaseUrl & "?day=" & i
-
-			If .Sheets(SheetName).Range("E" & Day).Value <> "No Response from AccuWeather" And .Sheets(SheetName).Range("E" & Day).Value <> "" Then _
-				Goto Continue
-
-			'Creates the xmlhttp object that interacts with the website. .ServerXMLHTTP60 is used so the page data is not cached.
-			Set xmlhttp = New MSXML2.ServerXMLHTTP60
-			With xmlhttp
-				.Open "GET", URL, False
-				.setRequestHeader "Content-Type", "text/xml; charset=utf-8"
-				If SendXML(xmlhttp) <> 0 Then
-					Set xmlhttp = Nothing
-					ThisWorkbook.Sheets(SheetName).Range("E" & Day).Value = "No Response from AccuWeather"
-					Goto Continue
-				End If
-				While .READYSTATE <> 4
-					DoEvents
-				Wend
-				HTML_Data = .responseText
-			End With
 
 			'Cuts the HTML code to the precipitation
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<!-- /.feed-tabs -->"), Len(HTML_Data))
@@ -248,10 +193,10 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 
 End Sub
 
-Sub GeneralScraper(SheetName As String, LocationURL As String, Optional RowNo As Integer = 0)
+Sub GeneralScraper(SheetName As String, LocationUrl As String, Optional RowNo As Integer = 0)
 	If RowNo = 0 Then _
 		RowNo = NextWeather
-	Call AccuWeatherScraper(SheetName, "http://www.accuweather.com/en/ca/" & LocationURL, RowNo)
+	Call AccuWeatherScraper(SheetName, "http://www.accuweather.com/en/ca/" & LocationUrl, RowNo)
 	NextWeather = RowNo + AccuCount + 2
 End Sub
 
