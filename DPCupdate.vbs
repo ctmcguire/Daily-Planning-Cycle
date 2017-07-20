@@ -36,6 +36,8 @@ Private Sub Finish()
 	Application.StatusBar = False
 	Application.Calculation = xlCalculationAutomatic
 	Application.ScreenUpdating = True
+
+	Call DebugLogging.Clear
 End Sub
 
 Sub UpdateDPCByDate()
@@ -67,6 +69,8 @@ Public Function UpdateDPCByAuto()
 	IsAuto = True
 
 	Call UpdateDPC(SheetName, SheetDay)
+
+	UpdateDPCByAuto = DebugLogging.PrintMsg
 	Call Finish
 End Function
 

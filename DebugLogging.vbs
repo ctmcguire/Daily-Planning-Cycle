@@ -9,10 +9,14 @@
 ' */
 Private DebugMsg As String
 Public Function PrintMsg(Optional Txt As String = "")
-	If Not Txt = "" Then
+	If Not Txt = "" Then _
 		DebugMsg = DebugMsg & "[" & Now & "] " & Txt & vbCrLf 'Don't add text if no input is given
 	PrintMsg = DebugMsg 'Return to get the value of DebugMsg
 End Function
+
+Public Sub Clear()
+	DebugMsg = ""
+End Sub
 
 Public Sub Erred()
 	If Err.Number = 0 Then _
