@@ -29,6 +29,7 @@ Private Sub Start()
 	Application.Calculation = xlCalculationManual 'Sheet calculations are turned off to speed up the processing time.
 
 	IsAuto = False 'By default, it is assumed that the macro is being run by a user
+	Call DebugLogging.Clear 'Clear the debug log (in case it isn't empty already)
 End Sub
 
 Private Sub Finish()
@@ -36,8 +37,6 @@ Private Sub Finish()
 	Application.StatusBar = False
 	Application.Calculation = xlCalculationAutomatic
 	Application.ScreenUpdating = True
-
-	Call DebugLogging.Clear
 End Sub
 
 Sub UpdateDPCByDate()
