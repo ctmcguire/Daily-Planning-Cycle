@@ -103,9 +103,8 @@ Public Sub LoadData(SheetName As String, Row As Integer)
 		If pID = "N/A" Then _
 			Exit Sub
 		For Each Sensor In pSensors
-			If IsEmpty(.Cells(Row, Sensor.Column)) Then
+			If IsEmpty(.Cells(Row, Sensor.Column)) Then _
 				.Cells(Row, Sensor.Column).Value = Sensor.Value(pID)
-			End If
 		Next
 	End With
 End Sub
