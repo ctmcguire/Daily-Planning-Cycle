@@ -3,8 +3,8 @@ Option Explicit
 
 Private Sub CommandButton1_Click()
 
-	SheetName = HourPicker.DTPicker5.Value
-	SheetDay = Format(HourPicker.DTPicker5.Value, "ham/pm mmm d")
+	SheetName = Format(HourPicker.DTPicker5.Value, "ham/pm mmm d")
+	SheetDay = HourPicker.DTPicker5.Value
 
 	'The form is unloaded to free up memory.
 	Unload Me
