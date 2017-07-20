@@ -39,7 +39,7 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 
 	'The Data and Column arrays are used to store values that are needed during the nested loops
 	Dim Data(6) As String 'Data stores the name of the data being retrieved
-	Dim Column(6) As String 'Column stores the column of the cell the retrieved data will be stored in (although for current forcast values it stores the actual cell)
+	Dim Column(6) As String 'Column stores the column of the cell the retrieved data will be stored in (although for current forecast values it stores the actual cell)
 
 	'The With statement is used to ensure the macro does not modify other workbooks that may be open.
 	With ThisWorkbook
@@ -62,6 +62,9 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 		'-----------------------------------------------------------------------------------------------------------------------------'
 		''''''''''Loads the web data into VBA'''''''''''''
 		''''''''''''''''''''''''''''''''''''''''''''''''''
+
+		Call DebugLogging.PrintMsg("Getting weather data from server...")
+
 		'Creates the xmlhttp object that interacts with the website. .ServerXMLHTTP60 is used so the page data is not cached.
 		Set xmlhttp = New MSXML2.ServerXMLHTTP60
 		'Indicates that page that will receive the request and the type of request being submitted.  Your location's link can be found at: http://legacyweb.theweathernetwork.com/rss/
@@ -80,6 +83,9 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 		Wend
 		'Assigns the the website's HTML to the HTML_Data variable.
 		HTML_Data = xmlhttp.responseText
+
+		Call DebugLogging.PrintMsg("Finished.  Extracting current conditions...")
+
 		'-----------------------------------------------------------------------------------------------------------------------------'
 
 		''''''''''Extracts the Current Conditions'''''''''''''
@@ -113,6 +119,8 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 
 			.Sheets(SheetName).Range(Column(j)).Value = DataString
 		next j
+
+		Call DebugLogging.PrintMsg("Finished.  Extracting short-term forecast...")
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
 
@@ -169,6 +177,8 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 			next j
 		next i
 
+		Call DebugLogging.PrintMsg("Finished.  Extracting long-term forecast...")
+
 		'Initialize Data and Column arrays for the long-term forecast values (Some values will be unchanged)
 		Data(0) = "temperatureMin_c"
 		Data(1) = "temperatureMax_c"
@@ -218,6 +228,8 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 
 		'Once the 7th day's forecast is loaded, the xmlhttp is set to 'Nothing' to prevent caching and the module closes.
 		Set xmlhttp = Nothing
+
+		Call DebugLogging.PrintMsg("Finished.  Exiting macro...")
 
 	End With
 End Sub

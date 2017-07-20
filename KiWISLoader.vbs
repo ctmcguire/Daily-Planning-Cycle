@@ -1,6 +1,6 @@
 Option Explicit
 
-Sub KiWIS_Import(SheetName As String, InputDate As Date, Optional IsAuto As Boolean = False)
+Sub KiWIS_Import(SheetName As String, InputDate As Date)
 	'-----------------------------------------------------------------------------------------------------------------------------'
 	'Please send any questions or feedback to cmcguire@mvc.on.ca
 	'-----------------------------------------------------------------------------------------------------------------------------'
@@ -69,7 +69,7 @@ Private Function SufficientConnections()
 		nm.Delete
 	Next nm
 
-	Call DebugLogging.PrintMsg("Recreating correct number of connections...")
+	Call DebugLogging.PrintMsg("Connections cleared.  Recreating correct number of connections...")
 	'This loop re-adds the connections.  They do not start with any urls; these will be added by the CGaugeSensors before loading them
 	Dim i As Integer
 	For i = 0 To SensorCount - 1

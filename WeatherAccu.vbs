@@ -51,6 +51,7 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 	With ThisWorkbook
 		If .Sheets(SheetName).Range("B" & Day).Value <> "No Response from AccuWeather" And .Sheets(SheetName).Range("B" & Day).Value <> "" Then _
 			Goto Forecast5Day
+		Call DebugLogging.PrintMsg("Getting general information for the next week (this part will probably be merged with the next part in the future).")
 		'-----------------------------------------------------------------------------------------------------------------------------'
 		''''''''''Loads the web data into VBA'''''''''''''
 		''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -60,6 +61,9 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 		xmlhttp.Open "GET", BaseUrl, False
 		'Indicate that the body of the request contains form data
 		xmlhttp.setRequestHeader "Content-Type", "text/xml; charset=utf-8"
+
+		Call DebugLogging.PrintMsg("Getting xml response...")
+
 		'Send the data as name/value pairs
 		If SendXML(xmlhttp) <> 0 Then
 			Set xmlhttp = Nothing
@@ -72,6 +76,8 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 		Wend
 		'Assigns the the website's HTML to the HTML_Data variable.
 		HTML_Data = xmlhttp.responseText
+
+		Call DebugLogging.PrintMsg("Xml response retrieved.  Parsing html String...")
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
 		''''''''''Extracts the Forecast Location''''''''''''
@@ -128,12 +134,16 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 		'Adds a VBA time stamp to the weather since time is not published on the webpage.
 		.Sheets(SheetName).Range("B" & Day).Value = Format(DateTime.Now, "yyyy-MM-d hh:mm:ss")
 
+		Call DebugLogging.PrintMsg("Html String parsed.")
+
 		Set xmlhttp = Nothing 'Clears the object from memory
 
 		Forecast5Day:
 		'-----------------------------------------------------------------------------------------------------------------------------'
 		''''''''''Extracts the 5 day forecasted data from separate pages'''''''''''''
 		'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+		Call DebugLogging.PrintMsg("Getting forecast for 5 days...")
 
 		'The i variable navigates to the corresponding forecast day.
 		For i = 1 to 5
@@ -170,7 +180,9 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 			If Deg = 0 Then _
 				Deg = InStr(HTML_Data, "&deg;</span>")
 			IF Deg = 0 Then
-				MsgBox "Error parsing HTML string: degree character not found.  Attempting to parse without it..."
+				If Not IsAuto Then _
+					MsgBox "Error parsing HTML string: degree character not found.  Attempting to parse without it..."
+				Call DebugLogging.PrintMsg("Error parsing HTML string: degree character not found.  Attempting to parse without it...")
 				Deg = InStr(HTML_Data, "</span>")
 			End If
 			Temp = Mid(HTML_Data, 1, Deg - 1)
@@ -231,6 +243,9 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 			Continue: 'Label so Goto lines in error checking can go here
 		next i
 	End With
+
+	Call DebugLogging.PrintMsg("5 day forecasts retrieved")
+
 End Sub
 
 Sub GeneralScraper(SheetName As String, LocationURL As String, Optional RowNo As Integer = 0)

@@ -76,6 +76,8 @@ Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset A
 		If .Sheets(SheetName).Range("B" & (DayOffset)).Value <> "" And .Sheets(SheetName).Range("B" & (DayOffset)).Value <> "No Response from Environment Canada" Then _
 			Exit Sub
 
+		Call DebugLogging.PrintMsg("Getting weather data from server...")
+
 		''''''''''Loads the web data into VBA'''''''''''''
 		''''''''''''''''''''''''''''''''''''''''''''''''''
 		'Creates the xmlhttp object that interacts with the website. .ServerXMLHTTP60 is used so the page data is not cached.
@@ -99,6 +101,9 @@ Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset A
 		Wend
 		'Assigns the the website's HTML to the HTML_Data variable.
 		HTML_Data = xmlhttp.responseText
+
+		Call DebugLogging.PrintMsg("Finished.  Extracting current conditions...")
+
 		'-----------------------------------------------------------------------------------------------------------------------------'
 
 		''''''''''Extracts the Current Conditions and Watches and Warnings'''''''''''''
@@ -137,6 +142,8 @@ Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset A
 			.Sheets(SheetName).Range(Cell(i)).Value = DataString 'Set the value of the appropriate cell
 		next i
 
+		Call DebugLogging.PrintMsg("Finished.  Extracting long-term forecast...")
+
 		'-----------------------------------------------------------------------------------------------------------------------------'
 
 		''''''''''Extracts the Long Term Forecast'''''''''''''
@@ -163,8 +170,10 @@ Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset A
 
 		'Once the 7th day's forecast is loaded, the xmlhttp is set to 'Nothing' to prevent caching and the module closes.
 		Set xmlhttp = Nothing
-
 	End With
+
+	Call DebugLogging.PrintMsg("Finished.  Exiting macro...")
+
 End Sub
 
 Sub GeneralScraper(SheetName As String, LocationURL As String, Optional RowNo As Integer = 0)

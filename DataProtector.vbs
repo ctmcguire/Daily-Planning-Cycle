@@ -1,6 +1,6 @@
 Option Explicit
 
-Sub LockCells(SheetName As String, InputDate As Date, Optional IsAuto As Boolean = False)
+Sub LockCells(SheetName As String, InputDate As Date)
 	'-----------------------------------------------------------------------------------------------------------------------------'
 	'Please send any questions or feedback to cmcguire@mvc.on.ca
 	'-----------------------------------------------------------------------------------------------------------------------------'
@@ -16,6 +16,8 @@ Sub LockCells(SheetName As String, InputDate As Date, Optional IsAuto As Boolean
 	PrevDate = Format(DateAdd("d", -7, InputDate), "mmm d")
 	PrevFound = False
 
+	Call DebugLogging.PrintMsg("Checking if last week's sheet exists...")
+
 	'This 'For' loop checks that the sheet to be locked does in fact exist
 	Dim DPCsheet As Excel.Worksheet
 	For Each DPCsheet In ThisWorkbook.Worksheets
@@ -24,14 +26,15 @@ Sub LockCells(SheetName As String, InputDate As Date, Optional IsAuto As Boolean
 			Exit For 'If we've already found PrevDate, we don't need to continue looking for it
 		End If
 	Next
-	If Not PrevFound Then
-		'If the sheet from 7 days ago does not exist, the user is alerted of the potential consequences
-		Dim Answer As Integer
-		If Not IsAuto Then _
-			Answer = MsgBox("A sheet for '" & PrevDate & "' was not found; as a result, '" & PrevDate & "' cannot be properly locked", vbOKOnly, "Missing Sheet for " & PrevDate)
 
-	'The With statement is used to ensure the macro does not modify other workbooks that may be open.
+	If Not PrevFound Then
+		If Not IsAuto Then _
+			MsgBox "A sheet for '" & PrevDate & "' was not found; as a result, '" & PrevDate & "' cannot be properly locked", vbOKOnly, "Missing Sheet for " & PrevDate
+		Call DebugLogging.PrintMsg("Unable to find last week's sheet; missing sheet will not be locked.")
 	Else
+		Call DebugLogging.PrintMsg("Sheet found.  Locking...")
+
+		'The With statement is used to ensure the macro does not modify other workbooks that may be open.
 		With ThisWorkbook
 			'The sheet from 7 days before the current date is unprotected.
 			.Sheets(PrevDate).Unprotect
@@ -40,27 +43,42 @@ Sub LockCells(SheetName As String, InputDate As Date, Optional IsAuto As Boolean
 			'The entire sheet is now protected.
 			.Sheets(PrevDate).Protect
 		End With
+		Call DebugLogging.PrintMsg("Sheet successfully locked.")
 	End If
 
 	With ThisWorkbook
-		'The cells containing gauge data are unlocked.
-		.Sheets(SheetName).Range("A1:M" & AccuStart - 1).Locked = False
+		Call DebugLogging.PrintMsg("Protecting worksheet...")
+
+		.Sheets(SheetName).Range("A1:M" & AccuStart - 1).Locked = False 'The cells containing gauge data are unlocked.
 		'The sheet is protected and by default, the weather data is locked.
 		.Sheets(SheetName).Protect AllowInsertingRows:=True, AllowFormattingCells:=True, AllowFormattingColumns:=True, AllowFormattingRows:=True
-		
-		'The Daily Planning Cycle file is saved.
+
+		Call DebugLogging.PrintMsg("Worksheet protected.  Saving worksheet")
+
 		On Error Resume Next
-		.Save
-		If Err.Number <> 0 And Not IsAuto Then _
-			MsgBox "Failed to save because no network was found"
+		.Save 'The Daily Planning Cycle file is saved.
+		If Err.Number <> 0 Then
+			If Not IsAuto Then _
+				MsgBox "Failed to save because no network was found"
+			DebugLogging.PrintMsg("Failed to save because no network was found.")
+		End If
 		On Error GoTo 0
 		.Application.DisplayAlerts = False
+
+		Call DebugLogging.PrintMsg("Saving server backup...")
+
 		'A backup copy is saved to the 'Water Management Files' folder and the local desktop.
 		On Error Resume Next
 		.SaveCopyAs "\\APP-SERVER\Data_drive\common_folder\Water Management Files\Backup " & ThisWorkbook.name
-		If Err.Number <> 0 And Not IsAuto Then _
-			MsgBox "Failed to save because no network was found"
+		If Err.Number <> 0 Then
+			If Not IsAuto Then _
+				MsgBox "Failed to save because no network was found"
+			DebugLogging.PrintMsg("Failed to save because no network was found")
+		End If
 		On Error GoTo 0
+
+		Call DebugLogging.PrintMsg("Saving local backups...")
+
 		.SaveCopyAs "C:\Users\Public\Documents\Backup " & ThisWorkbook.name
 		.SaveCopyAs CreateObject("WScript.Shell").SpecialFolders("Desktop") & Application.PathSeparator & "Backup " & ThisWorkbook.name
 	End With

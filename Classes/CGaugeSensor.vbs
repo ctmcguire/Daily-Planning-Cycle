@@ -126,8 +126,8 @@ Private Function LoadKiWIS()
 	ThisWorkbook.Sheets("Raw1").QueryTables("ExternalData_" & pRangeIndex).Refresh(False)
 	If Err.Number <> 0 Then
 		On Error Goto 0
-		'If Not IsAuto Then _
-		'	MsgBox "KiWIS Loader has failed"
+		If Not IsAuto Then _
+			MsgBox "KiWIS Loader has failed"
 		LoadKiWIS = False
 		Exit Function
 	End If
