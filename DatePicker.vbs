@@ -51,5 +51,3 @@ End Sub
 Private Sub UserForm_Initialize()
 	DatePicker.DTPicker1.Value = Date
 End Sub
-
-
