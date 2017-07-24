@@ -10,7 +10,7 @@ Private Function SendXML(xmlhttp As Object) As Integer
 	SendXML = 0
 End Function
 
-Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset As Integer)
+Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset As Integer, Optional IsAuto As Boolean)
 	'-----------------------------------------------------------------------------------------------------------------------------'
 	'Please send any questions or feedback to cmcguire@mvc.on.ca
 	'-----------------------------------------------------------------------------------------------------------------------------'
@@ -84,7 +84,7 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 		'Assigns the the website's HTML to the HTML_Data variable.
 		HTML_Data = xmlhttp.responseText
 
-		Call DebugLogging.PrintMsg("Finished.  Extracting current conditions...")
+		Call DebugLogging.PrintMsg("Finished getting weather data.  Extracting current conditions...")
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
 
@@ -120,7 +120,7 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 			.Sheets(SheetName).Range(Column(j)).Value = DataString
 		next j
 
-		Call DebugLogging.PrintMsg("Finished.  Extracting short-term forecast...")
+		Call DebugLogging.PrintMsg("Current conditions extracted.  Extracting short-term forecast...")
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
 
@@ -177,7 +177,7 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 			next j
 		next i
 
-		Call DebugLogging.PrintMsg("Finished.  Extracting long-term forecast...")
+		Call DebugLogging.PrintMsg("Short-term forecast extracted.  Extracting long-term forecast...")
 
 		'Initialize Data and Column arrays for the long-term forecast values (Some values will be unchanged)
 		Data(0) = "temperatureMin_c"
@@ -229,15 +229,14 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 		'Once the 7th day's forecast is loaded, the xmlhttp is set to 'Nothing' to prevent caching and the module closes.
 		Set xmlhttp = Nothing
 
-		Call DebugLogging.PrintMsg("Finished.  Exiting macro...")
-
+		Call DebugLogging.PrintMsg("Long-term forecast extracted.  Exiting macro...")
 	End With
 End Sub
 
-Sub GeneralScraper(SheetName As String, LocationURL As String, Optional RowNo As Integer = 0)
+Sub GeneralScraper(SheetName As String, LocationURL As String, Optional RowNo As Integer = 0, Optional IsAuto As Boolean = False)
 	If RowNo = 0 Then _
 		RowNo = NextWeather
-	Call TWNWeatherScraper(SheetName, "http://legacyweb.theweathernetwork.com/dataaccess/citypage/json/" & LocationURL, RowNo)
+	Call TWNWeatherScraper(SheetName, "http://legacyweb.theweathernetwork.com/dataaccess/citypage/json/" & LocationURL, RowNo, IsAuto)
 	NextWeather = RowNo + TWNCount + 2
 End Sub
 

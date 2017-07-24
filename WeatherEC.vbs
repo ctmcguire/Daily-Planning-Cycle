@@ -10,7 +10,7 @@ Private Function SendXML(xmlhttp As Object) As Integer
 	SendXML = 0
 End Function
 
-Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset As Integer)
+Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset As Integer, Optional IsAuto As Boolean = False)
 	'-----------------------------------------------------------------------------------------------------------------------------'
 	'Please send any questions or feedback to cmcguire@mvc.on.ca
 	'-----------------------------------------------------------------------------------------------------------------------------'
@@ -102,7 +102,7 @@ Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset A
 		'Assigns the the website's HTML to the HTML_Data variable.
 		HTML_Data = xmlhttp.responseText
 
-		Call DebugLogging.PrintMsg("Finished.  Extracting current conditions...")
+		Call DebugLogging.PrintMsg("Finished getting weather data from server.  Extracting current conditions...")
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
 
@@ -142,7 +142,7 @@ Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset A
 			.Sheets(SheetName).Range(Cell(i)).Value = DataString 'Set the value of the appropriate cell
 		next i
 
-		Call DebugLogging.PrintMsg("Finished.  Extracting long-term forecast...")
+		Call DebugLogging.PrintMsg("Current conditions extracted.  Extracting long-term forecast...")
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
 
@@ -172,14 +172,14 @@ Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset A
 		Set xmlhttp = Nothing
 	End With
 
-	Call DebugLogging.PrintMsg("Finished.  Exiting macro...")
+	Call DebugLogging.PrintMsg("Long-term forecast extracted.  Exiting macro...")
 
 End Sub
 
-Sub GeneralScraper(SheetName As String, LocationURL As String, Optional RowNo As Integer = 0)
+Sub GeneralScraper(SheetName As String, LocationURL As String, Optional RowNo As Integer = 0, Optional IsAuto As Boolean = False)
 	If RowNo = 0 Then _
 		RowNo = NextWeather
-	Call ECWeatherScraper(SheetName, "http://weather.gc.ca/rss/city/" & LocationURL & ".xml", RowNo)
+	Call ECWeatherScraper(SheetName, "http://weather.gc.ca/rss/city/" & LocationURL & ".xml", RowNo, IsAuto)
 	NextWeather = RowNo + ECCount + 2
 End Sub
 

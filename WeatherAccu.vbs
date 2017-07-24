@@ -10,7 +10,7 @@ Private Function SendXML(xmlhttp As Object) As Integer
 	SendXML = 0
 End Function
 
-Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset As Integer)
+Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset As Integer, Optional IsAuto As Boolean = False)
 	'-----------------------------------------------------------------------------------------------------------------------------'
 	'Please send any questions or feedback to cmcguire@mvc.on.ca
 	'-----------------------------------------------------------------------------------------------------------------------------'
@@ -189,14 +189,14 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 		next i
 	End With
 
-	Call DebugLogging.PrintMsg("5 day forecasts retrieved")
+	Call DebugLogging.PrintMsg("5 day forecasts retrieved.")
 
 End Sub
 
-Sub GeneralScraper(SheetName As String, LocationUrl As String, Optional RowNo As Integer = 0)
+Sub GeneralScraper(SheetName As String, LocationUrl As String, Optional RowNo As Integer = 0, Optional IsAuto As Boolean = False)
 	If RowNo = 0 Then _
 		RowNo = NextWeather
-	Call AccuWeatherScraper(SheetName, "http://www.accuweather.com/en/ca/" & LocationUrl, RowNo)
+	Call AccuWeatherScraper(SheetName, "http://www.accuweather.com/en/ca/" & LocationUrl, RowNo, IsAuto)
 	NextWeather = RowNo + AccuCount + 2
 End Sub
 
