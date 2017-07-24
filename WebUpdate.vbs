@@ -2,11 +2,10 @@ Option Explicit
 
 'The sheetdate variable is defined as cell B6 on the sheet that the Update Website button was pressed.
 'This is defined in the 'Assign Macro' formula.
-Sub Run_WebUpdate(sheetdate As String, Optional IsAuto As Boolean = False)
+Sub UpdateSql(sheetdate As String, Optional IsAuto As Boolean = False)
 	'-----------------------------------------------------------------------------------------------------------------------------'
 	'Please send any questions or feedback to cmcguire@mvc.on.ca
 	'-----------------------------------------------------------------------------------------------------------------------------'
-
 	'The Run_WebUpdate function is used to populate a workbook that is used to upload data to an SQL database hosted on mvc.on.ca.
 	'The workbook location may have to be adjusted when running on a different computer.
 	'1.  Navigate to https://dev.mysql.com/downloads/connector/odbc/ and download the Windows Windows (x86, 32-bit), MSI Installer and Windows (x86, 64-bit), MSI Installer.  You may require both drivers in the event that your 64-bit Windows is running 32-bit Excel.
@@ -29,15 +28,7 @@ Sub Run_WebUpdate(sheetdate As String, Optional IsAuto As Boolean = False)
 	'Debug_Text.TextBox1 = GaugeName(i)
 	'Debug_Text.Show
 	'-----------------------------------------------------------------------------------------------------------------------------'
-
 	Call CASpecific.InitializeGauges
-	'The Status Bar is located on the bottom left corner of the Excel window.  It's default status is 'READY'.
-	'The Status Bar Displays 'Processing Request...' until the UpdateDPC subroutine has ended.
-	Application.StatusBar = "Processing Request..."
-	'Screen Updating is turned off to speed up the processing time.
-	Application.ScreenUpdating = False
-	'Sheet calculations are turned off to speed up the processing time.
-	Application.Calculation = xlCalculationManual
 
 	'The 'i' variable is used to navigate the rows of the workbook.
 	Dim i As Integer
@@ -45,43 +36,57 @@ Sub Run_WebUpdate(sheetdate As String, Optional IsAuto As Boolean = False)
 	Dim InputDate As String
 	InputDate = Format(sheetdate, "mmm d")
 
+	Call DebugLogging.PrintMsg("Connecting to MySQL Database...")
+
 	'-----------------------------------------------------------------------------------------------------------------------------'
 	Dim LevelsConn As ADODB.Connection
 	Set LevelsConn = New ADODB.Connection
 	LevelsConn.ConnectionString = "DRIVER={MySQL ODBC 5.3 Unicode Driver};SERVER=mvc.on.ca;DATABASE=mvconc55_mvclevels;UID=mvconc55_levels1;PWD=4z9!yA;OPTION=3"
-	LevelsConn.Open
-	'-----------------------------------------------------------------------------------------------------------------------------'
 
+	On Error GoTo OnError
+	LevelsConn.Open
+	On Error GoTo 0
+	'-----------------------------------------------------------------------------------------------------------------------------'
 	'The With statement ensures the macro references the daily planning cycle workbook.
 	With ThisWorkbook
+		Call DebugLogging.PrintMsg("Connected to MySQL Database.  Uploading FlowGauge data...")
+
 		For i = 0 To UBound(FlowGauges)
 			'If the value exists, the Date, Time, Value and Historical average are uploaded.
 			If .Sheets("Raw2").Range("E" & (flowStart + i)) < .Sheets(InputDate).Range("E" & (flowStart + i)) Then _
-				Call Run_SQL(i + flowStart, InputDate, FlowGauges(i).Name, LevelsConn)
+				Call RunSql(i + flowStart, InputDate, FlowGauges(i).Name, LevelsConn)
 		Next i
+
+		Call DebugLogging.PrintMsg("FlowGauge data uploaded.  Uploading DailyGauge data...")
 
 		For i = 0 To UBound(DailyGauges)
 			If .Sheets("Raw2").Range("E" & (dailyStart + i)) < .Sheets(InputDate).Range("E" & (dailyStart + i)) Then _
-				Call Run_SQL(i + dailyStart, InputDate, DailyGauges(i).Name, LevelsConn)
+				Call RunSql(i + dailyStart, InputDate, DailyGauges(i).Name, LevelsConn)
 		Next i
+
+		Call DebugLogging.PrintMsg("DailyGauge data uploaded.  Uploading WeeklyGauge data...")
 
 		For i = 0 To UBound(WeeklyGauges)
 			'These values are the same between the Raw2 sheet and the other sheets, so this if statement instead checks if the value is positive
 			If 0 < .Sheets(InputDate).Range("E" & (weeklyStart + i)) Then _
-				Call Run_SQL(i + weeklyStart, InputDate, WeeklyGauges(i).Name, LevelsConn) 'NoRain is set to true because there is no precipitation measurement for the weekly values
+				Call RunSql(i + weeklyStart, InputDate, WeeklyGauges(i).Name, LevelsConn)
 		Next i
+
+		Call DebugLogging.PrintMsg("WeeklyGauge data uploaded.  Closing connection to MySQL Database...")
 
 		LevelsConn.Close
 
+		Call DebugLogging.PrintMsg("Connection closed.  Macro will now exit.")
+
 		If Not IsAuto Then _
 			MsgBox "The requested data has been uploaded to the website. Please visit: http://mvc.on.ca/water-levels-app/levels-table-option/ataglance.php to ensure accuracy."
-
-		'The previously adjusted modes are returned to their default state.
-		Application.StatusBar = False
-		Application.Calculation = xlCalculationAutomatic
-		Application.ScreenUpdating = True
-
 	End With
+
+	Exit Sub
+	OnError:
+		DebugLogging.Erred
+		If Not IsAuto Then _
+			MsgBox DebugLogging.PrintMsg
 End Sub
 
 '/* 
@@ -92,7 +97,7 @@ End Sub
 ' * @param GaugeName	- The name of the gauge that corresponds to the i-value
 ' * @param LevelsConn	- A connection to the SQL database that can be used to run the SQL queries
 ' */
-Sub Run_SQL(i As Integer, InputDate As String, GaugeName As String, LevelsConn As ADODB.Connection)
+Private Sub RunSql(i As Integer, InputDate As String, GaugeName As String, LevelsConn As ADODB.Connection)
 	Dim strSQL As String 'String to store the SQL query
 	Dim havg As String
 	Dim Rain As String
@@ -118,6 +123,6 @@ Sub Run_SQL(i As Integer, InputDate As String, GaugeName As String, LevelsConn A
 	End With
 End Sub
 
-Function esc(txt As String)
+Private Function esc(txt As String)
 	esc = Trim(Replace(txt, "'", "\'"))
 End Function

@@ -20,15 +20,11 @@ Public Const CloyneTWNStart As Integer = CloyneAccuStart + AccuCount + 2
 Public SheetName As String
 Public SheetDay As Date
 
-Public IsAuto As Boolean
-
 Private Sub Start()
 	'The Status Bar is located on the bottom left corner of the Excel window.  It's default status is 'READY'.
 	Application.StatusBar = "Processing Request..." 'The Status Bar Displays 'Processing Request...' until the UpdateDPC subroutine has ended.
 	Application.ScreenUpdating = False 'Screen Updating is turned off to speed up the processing time.
 	Application.Calculation = xlCalculationManual 'Sheet calculations are turned off to speed up the processing time.
-
-	IsAuto = False 'By default, it is assumed that the macro is being run by a user
 	Call DebugLogging.Clear 'Clear the debug log (in case it isn't empty already)
 End Sub
 
@@ -62,21 +58,28 @@ Sub UpdateDPCByHour()
 End Sub
 
 Public Function UpdateDPCByAuto()
-	Call Start
 	SheetName = Format(Date, "mmm d")
 	SheetDay = Date + TimeSerial(6, 0, 0)
-	IsAuto = True
 
-	Call UpdateDPC(SheetName, SheetDay)
+	Call Start
+	Call UpdateDPC(SheetName, SheetDay, True)
+	Call Finish
 
 	UpdateDPCByAuto = DebugLogging.PrintMsg
+End Function
+
+Public Function UpdateWebBySql(SheetDate As String, Optional IsAuto As Boolean = False) As String
+	Call Start
+	Call WebUpdate.UpdateSql(SheetDate, IsAuto)
 	Call Finish
+
+	UpdateWebBySql = DebugLogging.PrintMsg
 End Function
 
 '-------------------------------------------------------------------------------------------------------------------------------------------------'
 'The UpdateDPC subroutine is run when the Update DPC button is pressed on sheet 'Raw1'
 'UpdateDPC runs the modules that load a new sheet and populate it with the requested data.
-Sub UpdateDPC(SheetName As String, SheetNo As Date)
+Sub UpdateDPC(SheetName As String, SheetNo As Date, Optional IsAuto As Boolean = False)
 	Call CASpecific.InitializeGauges
 	'-------------------------------------------------------------------------------------------------------------------------------------------------'
 	'Set everything back to the way it was before starting the macro and quietly exit if the datepicker/hourpicker was closed with the close button
@@ -122,14 +125,14 @@ Sub UpdateDPC(SheetName As String, SheetNo As Date)
 	If Answer = 0 Then _
 		Call AddSheet.CreateSheet(SheetName, SheetNo)
 	'The KiWISLoader module loads the KiWIS tables to the sheet 'Raw1'.
-	Call KiWISLoader.KiWIS_Import(SheetName, SheetNo)
+	Call KiWISLoader.KiWIS_Import(SheetName, SheetNo, IsAuto)
 
 	'The Weather... modules scrape weather data from AccuWeather, Environment Canada and The Weather Network and pastes it into the new sheet.
 	NextWeather = WeeklyStart + WeeklyCount + DataToWeatherGap
-	Call CASpecific.LoadWeather(SheetName)
+	Call CASpecific.LoadWeather(SheetName, IsAuto)
 
 	'The DataProtector module locks cells for editing and saves a backup of the daily planning cycle to the local desktop and the Water Management Files folder.
-	Call DataProtector.LockCells(SheetName, SheetNo)
+	Call DataProtector.LockCells(SheetName, SheetNo, IsAuto)
 
 	Call DebugLogging.PrintMsg("Macro finished.  Setting new worksheet as active worksheet.")
 	'----------------------------------------------------------------------------------------------------------------------------------------------'
