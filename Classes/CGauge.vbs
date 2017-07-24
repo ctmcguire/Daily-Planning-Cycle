@@ -95,7 +95,7 @@ Public Function Remove(Name As String)
 	pSensors.Remove(Name)
 End Function
 
-Public Sub LoadData(SheetName As String, Row As Integer)
+Public Sub LoadData(SheetName As String, Row As Integer, Optional IsAuto As Boolean = False)
 	If Not pInitialized Then _
 		Exit Sub
 	With ThisWorkbook.Sheets(SheetName)
@@ -104,7 +104,7 @@ Public Sub LoadData(SheetName As String, Row As Integer)
 			Exit Sub
 		For Each Sensor In pSensors
 			If IsEmpty(.Cells(Row, Sensor.Column)) Then _
-				.Cells(Row, Sensor.Column).Value = Sensor.Value(pID)
+				.Cells(Row, Sensor.Column).Value = Sensor.Value(pID, IsAuto)
 		Next
 	End With
 End Sub

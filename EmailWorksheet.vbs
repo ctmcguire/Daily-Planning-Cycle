@@ -1,4 +1,4 @@
-Sub DailyEmail()
+Function DailyEmail()
 	Dim WB As Workbook
 	Dim FileName As String
 	Dim date1 As String
@@ -10,7 +10,7 @@ Sub DailyEmail()
 	'date1 is set as the current date
 	date1 = Format(Date, "mmm d")
 	If ThisWorkbook.Sheets(date1).Range("H1").Value <> "" Then _
-		Exit Sub
+		Exit Function
 	Set WB = Application.ActiveWorkbook
 	FileName = WB.FullName
 
@@ -78,4 +78,4 @@ Sub DailyEmail()
 	End With
 	'delete the pdf
 	Kill FileName
-End Sub
+End Function

@@ -320,10 +320,10 @@ Sub InitializeGauges()
 End Sub
 
 
-Sub LoadWeather(SheetName As String)
-Call WeatherAccu.GeneralScraper(SheetName, "carleton-place/k7c/daily-weather-forecast/55438")
-	Call WeatherTWN.GeneralScraper(SheetName, "caon0119")
-	Call WeatherEC.GeneralScraper(SheetName, "on-118_e")
-	Call WeatherAccu.GeneralScraper(SheetName, "cloyne/k0h/daily-weather-forecast/2291535")
-	Call WeatherTWN.GeneralScraper(SheetName, "caon2071")
+Sub LoadWeather(SheetName As String, Optional IsAuto As Boolean = False)
+	Call WeatherAccu.GeneralScraper(SheetName, "carleton-place/k7c/daily-weather-forecast/55438", , IsAuto)
+	Call WeatherTWN.GeneralScraper(SheetName, "caon0119", , IsAuto)
+	Call WeatherEC.GeneralScraper(SheetName, "on-118_e", , IsAuto)
+	Call WeatherAccu.GeneralScraper(SheetName, "cloyne/k0h/daily-weather-forecast/2291535", , IsAuto)
+	Call WeatherTWN.GeneralScraper(SheetName, "caon2071", , IsAuto)
 End Sub

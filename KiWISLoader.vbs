@@ -1,6 +1,6 @@
 Option Explicit
 
-Sub KiWIS_Import(SheetName As String, InputDate As Date)
+Sub KiWIS_Import(SheetName As String, InputDate As Date, Optional IsAuto As Boolean = False)
 	'-----------------------------------------------------------------------------------------------------------------------------'
 	'Please send any questions or feedback to cmcguire@mvc.on.ca
 	'-----------------------------------------------------------------------------------------------------------------------------'
@@ -25,18 +25,18 @@ Sub KiWIS_Import(SheetName As String, InputDate As Date)
 		For i = 0 To UBound(FlowGauges)
 			'This for loop moves the Water Surveys of Canada (WSC) data from Raw1 to the loaded sheet.
 			'The WSC sites measure the level, flow and precipitation.
-			FlowGauges(i).LoadData SheetName, i+flowStart
+			FlowGauges(i).LoadData SheetName, i+flowStart, IsAuto
 		Next i
 
 		'After the WSC Stream Gauge data is loaded the MVCA Lake data is loaded.
 		For i = 0 To UBound(DailyGauges)
-			DailyGauges(i).LoadData SheetName, i+dailyStart
+			DailyGauges(i).LoadData SheetName, i+dailyStart, IsAuto
 		Next i
 
 		'After MVCA Daily Lake data is loaded, the Weekly Lake data is loaded*
 		' *Currently No weekly gauges have Sensors to get data from, but this could conceivably change in the future
 		For i = 0 To UBound(WeeklyGauges)
-			WeeklyGauges(i).LoadData SheetName, i+weeklyStart
+			WeeklyGauges(i).LoadData SheetName, i+weeklyStart, IsAuto
 		Next i
 	End With
 

@@ -119,10 +119,11 @@ Private Function UrlKiWIS()
 	UrlKiWIS = BaseURL & pTsId & FromTo(SheetDay)
 End Function
 
-Private Function LoadKiWIS()
+Private Function LoadKiWIS(Optional IsAuto As Boolean = False)
 	LoadKiWIS = True
 
 	ThisWorkbook.Sheets("Raw1").QueryTables("ExternalData_" & pRangeIndex).Connection = "URL;" & UrlKiWIS()
+	On Error Resume Next
 	ThisWorkbook.Sheets("Raw1").QueryTables("ExternalData_" & pRangeIndex).Refresh(False)
 	If Err.Number <> 0 Then
 		On Error Goto 0
@@ -133,7 +134,7 @@ Private Function LoadKiWIS()
 	End If
 End Function
 
-Public Function Value(ID As String)
+Public Function Value(ID As String, Optional IsAuto As Boolean = False)
 	Dim Range As String
 
 	If Not pInitialized Then _
@@ -144,7 +145,7 @@ Public Function Value(ID As String)
 	End If
 
 	If Not pLoadedKiWIS Then
-		If Not LoadKiWIS() Then _
+		If Not LoadKiWIS(IsAuto) Then _
 			Exit Function
 		pLoadedKiWIS = True
 	End If

@@ -1,6 +1,6 @@
 Option Explicit
 
-Sub LockCells(SheetName As String, InputDate As Date)
+Sub LockCells(SheetName As String, InputDate As Date, Optional IsAuto As Boolean = False)
 	'-----------------------------------------------------------------------------------------------------------------------------'
 	'Please send any questions or feedback to cmcguire@mvc.on.ca
 	'-----------------------------------------------------------------------------------------------------------------------------'
