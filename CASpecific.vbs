@@ -321,6 +321,7 @@ End Sub
 
 
 Sub LoadWeather(SheetName As String, Optional IsAuto As Boolean = False)
+	'The Weather... modules scrape weather data from AccuWeather, Environment Canada and The Weather Network and pastes it into the new sheet.
 	Call WeatherAccu.GeneralScraper(SheetName, "carleton-place/k7c/daily-weather-forecast/55438", , IsAuto)
 	Call WeatherTWN.GeneralScraper(SheetName, "caon0119", , IsAuto)
 	Call WeatherEC.GeneralScraper(SheetName, "on-118_e", , IsAuto)

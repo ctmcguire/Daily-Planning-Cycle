@@ -50,7 +50,8 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 	'The With statement is used to ensure the macro does not modify other workbooks that may be open.
 	With ThisWorkbook
 		'Adds a VBA time stamp to the weather since time is not published on the webpage.
-		.Sheets(SheetName).Range("B" & Day).Value = Format(Now, "yyyy-MM-d hh:mm:ss")
+		If .Sheets(SheetName).Range("B" & Day).Value = "" Then _
+			.Sheets(SheetName).Range("B" & Day).Value = Format(Now, "yyyy-MM-d hh:mm:ss")
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
 		''''''''''Extracts the 5 day forecasted data from separate pages'''''''''''''

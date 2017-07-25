@@ -127,9 +127,12 @@ Sub UpdateDPC(SheetName As String, SheetNo As Date, Optional IsAuto As Boolean =
 	'The KiWISLoader module loads the KiWIS tables to the sheet 'Raw1'.
 	Call KiWISLoader.KiWIS_Import(SheetName, SheetNo, IsAuto)
 
-	'The Weather... modules scrape weather data from AccuWeather, Environment Canada and The Weather Network and pastes it into the new sheet.
+	
 	NextWeather = WeeklyStart + WeeklyCount + DataToWeatherGap
-	Call CASpecific.LoadWeather(SheetName, IsAuto)
+
+	'Do not get the current forecast if today is not the same day as the one for the sheet
+	If SheetName = Format(Now, "mmm d") Then _
+		Call CASpecific.LoadWeather(SheetName, IsAuto)
 
 	'The DataProtector module locks cells for editing and saves a backup of the daily planning cycle to the local desktop and the Water Management Files folder.
 	Call DataProtector.LockCells(SheetName, SheetNo, IsAuto)
