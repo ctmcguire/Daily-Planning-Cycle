@@ -41,7 +41,7 @@ Sub UpdateSql(sheetdate As String, Optional IsAuto As Boolean = False)
 	'-----------------------------------------------------------------------------------------------------------------------------'
 	Dim LevelsConn As ADODB.Connection
 	Set LevelsConn = New ADODB.Connection
-	LevelsConn.ConnectionString = "DRIVER={MySQL ODBC 5.3 Unicode Driver};SERVER=mvc.on.ca;DATABASE=mvconc55_mvclevels;UID=mvconc55_levels1;PWD=4z9!yA;OPTION=3"
+	LevelsConn.ConnectionString = StrVal(ThisWorkbook.Names("SqlDb"))
 
 	On Error GoTo OnError
 	LevelsConn.Open

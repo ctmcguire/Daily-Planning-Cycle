@@ -50,15 +50,15 @@ Function DailyEmail()
 	flds.Item(schema & "smtpserver") = "mail.mvc.on.ca"
 	flds.Item(schema & "smtpserverport") = 25
 	flds.Item(schema & "smtpauthenticate") = cdoBasic
-	flds.Item(schema & "sendusername") = "water-management@mvc.on.ca"
-	flds.Item(schema & "sendpassword") = "waterwater"
+	flds.Item(schema & "sendusername") = StrVal(ThisWorkbook.Names("EmailUn"))
+	flds.Item(schema & "sendpassword") = StrVal(ThisWorkbook.Names("EmailPw"))
 	flds.Item(schema & "smtpusessl") = False
 	flds.Update
 
 	'details of the email sent to water-management@mvc.on.ca or cmcguire@mvc.on.ca
 	With imsg
 		.To = "cmcguire@mvc.on.ca; gmountenay@mvc.on.ca; jnorth@mvc.on.ca; water-management@mvc.on.ca"
-		.From = "water-management@mvc.on.ca"
+		.from = StrVal(ThisWorkbook.Names("EmailUn"))
 		.Sender = "DPC System"
 		.Subject = "Daily Update for " + date1
 		.HTMLBody = "" 'Need body or attachments will get corrupted
@@ -71,11 +71,14 @@ Function DailyEmail()
 		If Err.Number = 0 Then
 			ThisWorkbook.Sheets(date1).Range("H1").Value = "Email sent at " & Now
 			ThisWorkbook.Save
-'			If Err.Number <> 0 Then _
-'				MsgBox "Failed to save because no network was found" 'Need a different way to print this :/
 		End If
 		On Error GoTo 0 'Go back to using to default error handler
 	End With
 	'delete the pdf
 	Kill FileName
+End Function
+
+
+Function StrVal(Formula As String) As String
+	StrVal = Mid(Formula, 3, Len(Formula) - 3)
 End Function
