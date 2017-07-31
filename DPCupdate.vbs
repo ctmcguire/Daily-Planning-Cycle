@@ -22,7 +22,7 @@ Public SheetDay As Date
 
 Private Sub Start()
 	'The Status Bar is located on the bottom left corner of the Excel window.  It's default status is 'READY'.
-	Application.StatusBar = "Processing Request..." 'The Status Bar Displays 'Processing Request...' until the UpdateDPC subroutine has ended.
+	Call ChangeStatus("Processing Request...") 'The Status Bar Displays 'Processing Request...' until the UpdateDPC subroutine has ended.
 	Application.ScreenUpdating = False 'Screen Updating is turned off to speed up the processing time.
 	Application.Calculation = xlCalculationManual 'Sheet calculations are turned off to speed up the processing time.
 	Call DebugLogging.Clear 'Clear the debug log (in case it isn't empty already)
@@ -30,7 +30,7 @@ End Sub
 
 Private Sub Finish()
 	'The previously adjusted modes are returned to their default state.
-	Application.StatusBar = False
+	Call ChangeStatus
 	Application.Calculation = xlCalculationAutomatic
 	Application.ScreenUpdating = True
 End Sub
@@ -112,8 +112,8 @@ Sub UpdateDPC(SheetName As String, SheetNo As Date, Optional IsAuto As Boolean =
 				Exit Sub
 			End If
 
-			Call DebugLogging.PrintMsg("Duplicate found.  Filling blanks" & Switch(IsAuto, "...", True, " as requested by user..."))
-			DPCsheet.Unprotect
+			
+			Call DataProtector.EditCells(SheetName, IsAuto)
 			Exit For
 		End If
 	Next
@@ -127,8 +127,11 @@ Sub UpdateDPC(SheetName As String, SheetNo As Date, Optional IsAuto As Boolean =
 	'The KiWISLoader module loads the KiWIS tables to the sheet 'Raw1'.
 	Call KiWISLoader.KiWIS_Import(SheetName, SheetNo, IsAuto)
 
-	
-	NextWeather = WeeklyStart + WeeklyCount + DataToWeatherGap
+	On Error Resume Next
+	NextWeather = Application.WorksheetFunction.Match("Weather Forecasts:", ThisWorkbook.Sheets(SheetName).Range("A:A"), 0) + 1
+	If Err.Number <> 0 Then _
+		NextWeather = WeeklyStart + WeeklyCount + DataToWeatherGap
+	On Error GoTo 0
 
 	'Do not get the current forecast if today is not the same day as the one for the sheet
 	If SheetName = Format(Now, "mmm d") Then _
@@ -149,4 +152,9 @@ Sub UpdateDPC(SheetName As String, SheetNo As Date, Optional IsAuto As Boolean =
 	If Not IsAuto Then _
 		MsgBox "The data for " & SheetName & " has loaded."
 	Call DebugLogging.PrintMsg("The data for " & SheetName & " has loaded.")
+End Sub
+
+
+Public Sub ChangeStatus(Optional Msg = False)
+	Application.StatusBar = Msg
 End Sub
