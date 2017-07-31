@@ -1,5 +1,10 @@
 Option Explicit
 
+'/* 
+' * This macro file is meant to contain the code that will be different between different CAs.  The goal is to simplify updating the DPC spreadsheets by only updating the files that are identical across all CAs.
+' * other files can of course be modified, but doing so will risk the modified files needing to be re-modified whenever these files get updated.
+' */
+
 Public Const SensorCount As Integer = 7
 
 Private Stage As CGaugeSensor
@@ -43,37 +48,45 @@ Public Const DataToWeatherGap As Integer = 12
 ' *  at the beginning of the first Sub or Function called in a macro (currently DPCUpdate.UpdateDPC and 
 ' * WebUpdate.Run_WebUpdate)
 ' * 
+' * NOTE: All changes to the DPC spreadsheet layout will require Raw2 to be modified.  Do these modifications before following the steps below
+' * 
+' * INSTRUCTIONS FOR ADDING A NEW SENSOR:
+' * 		1.  Create a new private CGaugeSensor variable at the top of the file (with the other sensor variables)
+' * 		2.  Use 'Set = New CGaugeSensor' to create the new sensor object (look at the other sensors if you 
+' * 			don't know how to do this)
+' * 		3.  Use the CGaugeSensor function to initialize the new sensor.  The Sensor name should reflect the information it retrieves, but it can be anything so long as its name is unique.  
+' * 			(See the CGaugeSensor class for more information on how to use the CGaugeSensor.CGaugeSensor function)
+' * 
+' * INSTRUCTIONS FOR CHANGING A SENSOR'S COLUMN:
+' * 	Changing a sensor's column is simple
+' * 		1.  Find the line where the CGaugeSensor for the sensor you would like to change the column of calls its CGaugeSensor function.
+' * 		2.  Change the column letter to that of the column you would like its data to appear in (this is the second parameter of the CGaugeSensor function)
+' * 
+' * INSTRUCTIONS FOR SETTING UP A SENSOR IN 2 COLUMNS:
+' * 	Somtimes you may want a Sensor's data to appear in one column for some gauges and a different column for other gauges.  Doing this is similar (but not identical) to adding a brand new sensor.
+' * 		1.  Follow steps 1 and 2 for adding a new sensor, but stop before step 3
+' * 		2.  Instead of calling the new sensor's CGaugeSensor function, call its Clone function.  Pass the Gauge you want to appear in multiple columns as the first parameter, and the new column it should appear in as
+' * 			the second.  Any gauge that uses the original column should use the original sensor, while gauges using the new column should use its clone.
+' * 
 ' * INSTRUCTIONS FOR ADDING A NEW GAUGE:
 ' * 		1.  Increase or decrease flowCount, dailyCount, and/or weeklyCount by the number of gauges being 
 ' * 			added to their respective CGauge arrays
-' * 		3.  Use the CGauge function to initialize the new Gauges in the Gauge Arrays.  (See the CGauge 
+' * 		2.  Use the CGauge function to initialize the new Gauges in the Gauge Arrays.  (See the CGauge 
 ' * 			class file for more information on how to use the CGauge.CGauge function)
-' * 		4.  Use the Add function to add the desired sensors to the new Gauges.  (See the CGauge class file for
+' * 		3.  Use the Add function to add the desired sensors to the new Gauges.  (See the CGauge class file for
 ' * 			more information on how to use the CGauge.Add function)
-' * 		5.  Use 'i = i + 1' to increment the i value.  
-' * 		6.  Add a new row for each of the new gauges into the Raw2 table
-' * 
-' * INSTRUCTIONS FOR ADDING A NEW SENSOR
-' * 		1.  Create a new private CGaugeSensor variable at the top of the file (with the other sensor variables)
-' * 		3.  Create a new public String constant that has the variable name of the new Sensor variable prefixed 
-' * 			by "Name" (take a look at the other SensorName constants if you do not understand).  This constant
-' * 			should store the (unique) name of what the Sensor measures, but as long as its value is unique it 
-' * 			CAN be whatever String you want without affecting the Macros (storing the name is just meant to 
-' * 			help with readability)
-' * 		4.  Use 'Set = New CGaugeSensor' to create the new sensor object (look at the other sensors if you 
-' * 			don't know how to do this)
-' * 		5.  Use the CGaugeSensor function to initialize the new sensor.  The Sensor name should be passed the 
-' * 			constant you defined in step 3.  (See the CGaugeSensor class for more information on how to use 
-' * 			the CGaugeSensor.CGaugeSensor function)
-' * 
-' * INSTRUCTIONS FOR CHANGING THE COLUMN OF A SENSOR
-' * 		1.  Change the parameter for the column being changed (dpc column or raw1 column) to whichever column you wish to give it
+' * 		4.  Use 'i = i + 1' to increment the i value.  
 ' * 
 ' * INSTRUCTIONS FOR CHANGING THE ROW OF A GAUGE
-' * 		1.  Because of the i variable being incremented after initializing each Gauge, the row is entirely 
-' * 			dependent on where it is initialized.  So, to change its row you just need to move its 2 to 3 
-' * 			lines of code to whereever you wish the Gauge to appear in the table
-' * 		2.  Move the respective row in Raw2 to finish changing the Gauge's row
+' * 	The i variable is incremented after initializing each gauge.  As such, its row is based on when it was initialized.
+' * 		1.  Locate the CGauge whose row you would like to change.
+' * 		2.  Locate the CGauge who appears in the row just before the new row you would like the CGauge from step 1 to appear on.
+' * 		3.  Cut all 2 to 3 lines for the CGauge in step 1 and paste them after the 2 to 3 lines for the CGauge in step 2.
+' * 
+' * INSTRUCTIONS FOR USING FEWER THAN 3 LISTS OF GAUGES
+' * 	You may not use 3 groups of gauges; while there is currently no way to add additional lists (without modifying other files), it is possible to use fewer.
+' * 		1.  Decide which of the lists (FlowGauges/DailyGauges/WeeklyGauges) will be ignored.  Set its respective count constant to 0 and remove all the lines in which its Gauges call their CGauge function
+' * 		2.  Set the respective gap variable (FlowToDailyGap/DailyToWeeklyGap/DataToWeatherGap) to 0.
 '**/
 Sub InitializeGauges()
 	Set Flow = New CGaugeSensor
@@ -320,11 +333,23 @@ Sub InitializeGauges()
 End Sub
 
 
+'/**
+' * INSTRUCTIONS FOR CALLING THE WEATHER FUNCTIONS
+' * 	Not all CAs get the same weather information; not only does the geographic location change, but the source sights aren't necessarily the same either.
+' * 		1.  Decide which source or sources you will be getting weather from (the options are AccuWeather, Environment Canada, and The Weather Network).
+' * 		2.  Decide which order you want your sources to appear in.  The order you call the scraper functions in WILL be the order in which the weather data appears, so keep this in mind when calling them.
+' * 		3.  For each source, you will need to unique part of the url that distinguishes it from the other locations.  For the weather network, this is everything after the last forward slash.  For environment canada,
+' * 			this is everything after the last forward slash but before the '.xml'.  For AccuWeather, this is everything after "www.accuweather.com/en/ca/".  
+' * 		4.  Call the GeneralScraper function from the respective source's VBA module (WeatherAccu/WeatherEC/WeatherTWN), passing SheetName as parameter 1, the unique part of the url obtained in step 3 as parameter 2, 
+' * 			and the IsAuto variable as parameter 3.
+' * 				>  IsAuto is just a boolean that indicates whether or not UI popups should be displayed.  The popups interfere when macros are being run in the background from task scheduler
+' * 		5.  Repeat steps 1 through 4 for each scraper you would like to add, keeping in mind that the order they are called in is the order they appear in.
+'**/
 Sub LoadWeather(SheetName As String, Optional IsAuto As Boolean = False)
 	'The Weather... modules scrape weather data from AccuWeather, Environment Canada and The Weather Network and pastes it into the new sheet.
-	Call WeatherAccu.GeneralScraper(SheetName, "carleton-place/k7c/daily-weather-forecast/55438", , IsAuto)
-	Call WeatherTWN.GeneralScraper(SheetName, "caon0119", , IsAuto)
-	Call WeatherEC.GeneralScraper(SheetName, "on-118_e", , IsAuto)
-	Call WeatherAccu.GeneralScraper(SheetName, "cloyne/k0h/daily-weather-forecast/2291535", , IsAuto)
-	Call WeatherTWN.GeneralScraper(SheetName, "caon2071", , IsAuto)
+	Call WeatherAccu.GeneralScraper(SheetName, "carleton-place/k7c/daily-weather-forecast/55438", IsAuto)
+	Call WeatherTWN.GeneralScraper(SheetName, "caon0119", IsAuto)
+	Call WeatherEC.GeneralScraper(SheetName, "on-118_e", IsAuto)
+	Call WeatherAccu.GeneralScraper(SheetName, "cloyne/k0h/daily-weather-forecast/2291535", IsAuto)
+	Call WeatherTWN.GeneralScraper(SheetName, "caon2071", IsAuto)
 End Sub

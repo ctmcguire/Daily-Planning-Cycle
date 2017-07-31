@@ -15,27 +15,21 @@ End Sub
 ' * This is due mostly to the fact that VBA does not support constructors with parameters, resulting in the 
 ' * need for this function.
 ' * 
-' * @param Name - String representing the name of the gauge that is visible from the excel tables
 ' * @param ID   - String representing the station_name value found in Raw1 that is associated with this 
 ' *            Gauge.  When set to "N/A", this Gauge will not return values from Raw1.  Defaults to "N/A" if
 ' *             not specified.
+' * @param Name - String representing the name of the gauge that is visible from the excel tables.  This value can be ignored if you are not using the WebUpdate Macros.  Defaults to the empty string.
 ' * 
 ' * @returns - This function does not return a value
 ' * 
 ' * 
 ' * Example usage:
-' * 				'These first 2 lines are shown for context
-' * 				'Dim Gauge As CGauge
-' * 				'Set Gauge = New CGauge
-' * 				Gauge.CGauge "Keith", "Gauge - Keith"
-' * The above example sets the CGauge object Gauge's name to "Keith", and sets its id to "Gauge - Keith"
+' * 				Gauge.CGauge "Gauge - Widow Lake"
+' * The above example sets the CGauge object Gauge's id to "Gauge - Widow Lake"
 ' * 
 ' * Example usage:
-' * 				'These first 2 lines are shown for context
-' * 				'Dim Gauge As CGauge
-' * 				'Set Gauge = New CGauge
-' * 				Gauge.CGauge "Keith (weekly)"
-' * The above example sets the CGauge object Gauge's name to "Keith", and sets its id to "N/A"
+' * 				Gauge.CGauge
+' * The above example sets the CGauge object Gauge's id to "N/A"
 '**/
 Public Sub CGauge(Optional ID As String = "N/A", Optional Name As String = "")
 	If pInitialized Then _

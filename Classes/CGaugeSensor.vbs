@@ -30,17 +30,20 @@ End Sub
 ' * 
 ' * @param Name   - The name of what this Sensor measures
 ' * @param Column - The letter of the column for this sensor in the dpc tables
-' * @param RawCol - The letter of the column for this sensor in the raw1 table
+' * @param RangeIndex - The external range that holds the data for this CGaugeSensor
+' * @param TsId - The timeseries group id for this CGaugeSensor
+' * @param StartTime - The minimum timestamp for the KiWIS data being retrieved.  <InDate> can be substituted for an hour to get the input date's hour.  Defaults to 5 seconds before the input hour.
+' * @param StartOffset - If <InDate> is used in StartTime, this is the number of hours that will be subtracted from it.  This will not do anything if StartTime does not contain <InDate>.  Defaults to 1.
+' * @param EndTime - The maximum timestamp for the KiWIS data being retrieved.  Like with StartTime, <InDate> can be used to get the input date's hour.  Defaults to 5 seconds after the input hour.
+' * @param IsPrev - Whether or not this Sensor measures data from the previous day.  Will get the previous day's data if set to true.  Defaults to false.
+' * @param IsSum - Whether or not this Sensor should get the sum of its returned data.  Only really meant to apply to the "rainfall to 0600" column at this point in time.  Defaults to false.
 ' * 
 ' * @returns - This function does not return anything
 ' * 
 ' * 
 ' * Example usage:
-' * 				'These first 2 lines are shown for context
-' * 				'Dim Sensor As CGaugeSensor
-' * 				'Set Sensor = New CGaugeSensor
-' * 				Sensor.CGaugeSensor "Dave the intern", "D", "I"
-' * The above example initializes the CGaugeSensor Sensor with a Name of "Dave the intern", a Column of "D", and a RawCol of "I"
+' * 				Sensor.CGaugeSensor "Flow Rate", "E", 3, 124004
+' * The above example initializes the CGaugeSensor Sensor with a Name of "Flow Rate", sets its column to "E", sets its range index to 3 (for ExternalData_3), and sets its timeseries group id to 124004.
 '**/
 Public Sub CGaugeSensor(Name As String, Column As String, RangeIndex As Integer, TsId As String, _
 						Optional StartTime As String = "<InDate>:59:55.000-05:00", Optional StartOffset As Integer = 1, _
