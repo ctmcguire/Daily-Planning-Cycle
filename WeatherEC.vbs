@@ -76,7 +76,7 @@ Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset A
 		If .Sheets(SheetName).Range("B" & (DayOffset)).Value <> "" And .Sheets(SheetName).Range("B" & (DayOffset)).Value <> "No Response from Environment Canada" Then _
 			Exit Sub
 
-		Call DebugLogging.PrintMsg("Getting weather data from server...")
+		Call DebugLogging.PrintMsg("EC - Getting weather data from server...")
 
 		''''''''''Loads the web data into VBA'''''''''''''
 		''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -102,7 +102,7 @@ Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset A
 		'Assigns the the website's HTML to the HTML_Data variable.
 		HTML_Data = xmlhttp.responseText
 
-		Call DebugLogging.PrintMsg("Finished getting weather data from server.  Extracting current conditions...")
+		Call DebugLogging.PrintMsg("EC - Finished getting weather data from server.  Extracting current conditions...")
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
 
@@ -142,7 +142,7 @@ Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset A
 			.Sheets(SheetName).Range(Cell(i)).Value = DataString 'Set the value of the appropriate cell
 		next i
 
-		Call DebugLogging.PrintMsg("Current conditions extracted.  Extracting long-term forecast...")
+		Call DebugLogging.PrintMsg("EC - Current conditions extracted.  Extracting long-term forecast...")
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
 
@@ -172,17 +172,17 @@ Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset A
 		Set xmlhttp = Nothing
 	End With
 
-	Call DebugLogging.PrintMsg("Long-term forecast extracted.  Exiting macro...")
+	Call DebugLogging.PrintMsg("EC - Long-term forecast extracted.  Exiting macro...")
 
 End Sub
 
-Sub GeneralScraper(SheetName As String, LocationURL As String, Optional RowNo As Integer = 0, Optional IsAuto As Boolean = False)
+Sub GeneralScraper(SheetName As String, LocationURL As String, Optional IsAuto As Boolean = False, Optional RowNo As Integer = 0)
 	If RowNo = 0 Then _
 		RowNo = NextWeather
 	Call ECWeatherScraper(SheetName, "http://weather.gc.ca/rss/city/" & LocationURL & ".xml", RowNo, IsAuto)
 	NextWeather = RowNo + ECCount + 2
 End Sub
 
-Sub OttawaScraper(SheetName As String)
-	Call ECWeatherScraper(SheetName, "http://weather.gc.ca/rss/city/on-118_e.xml", ECStart)
+Sub OttawaScraper(SheetName As String, Optional IsAuto As Boolean = False)
+	Call GeneralScraper(SheetName, "on-118_e", IsAuto, ECStart)
 End Sub

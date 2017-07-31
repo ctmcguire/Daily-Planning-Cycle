@@ -57,7 +57,7 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 		''''''''''Extracts the 5 day forecasted data from separate pages'''''''''''''
 		'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-		Call DebugLogging.PrintMsg("Getting forecast for 5 days...")
+		Call DebugLogging.PrintMsg("AccuWeather - Getting forecast for 5 days...")
 
 		'The i variable navigates to the corresponding forecast day.
 		For i = 1 to 5
@@ -128,7 +128,7 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 			IF Deg = 0 Then
 				If Not IsAuto Then _
 					MsgBox "Error parsing HTML string: degree character not found.  Attempting to parse without it..."
-				Call DebugLogging.PrintMsg("Error parsing HTML string: degree character not found.  Attempting to parse without it...")
+				Call DebugLogging.PrintMsg("AccuWeather - Error parsing HTML string: degree character not found.  Attempting to parse without it...")
 				Deg = InStr(HTML_Data, "</span>")
 			End If
 			Temp = Mid(HTML_Data, 1, Deg - 1)
@@ -190,22 +190,22 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 		next i
 	End With
 
-	Call DebugLogging.PrintMsg("5 day forecasts retrieved.")
+	Call DebugLogging.PrintMsg("AccuWeather - 5 day forecasts retrieved.")
 
 End Sub
 
-Sub GeneralScraper(SheetName As String, LocationUrl As String, Optional RowNo As Integer = 0, Optional IsAuto As Boolean = False)
+Sub GeneralScraper(SheetName As String, LocationUrl As String, Optional IsAuto As Boolean = False, Optional RowNo As Integer = 0)
 	If RowNo = 0 Then _
 		RowNo = NextWeather
-	Call AccuWeatherScraper(SheetName, "http://www.accuweather.com/en/ca/" & LocationUrl, RowNo, IsAuto)
+	Call AccuWeatherScraper(SheetName, "https://www.accuweather.com/en/ca/" & LocationUrl, RowNo, IsAuto)
 	NextWeather = RowNo + AccuCount + 2
 End Sub
 
-Sub CPScraper(SheetName As String)
-	Call AccuWeatherScraper(SheetName, "http://www.accuweather.com/en/ca/carleton-place/k7c/daily-weather-forecast/55438", AccuStart)
+Sub CPScraper(SheetName As String, Optional IsAuto As Boolean = False)
+	Call GeneralScraper(SheetName, "carleton-place/k7c/daily-weather-forecast/55438", IsAuto, AccuStart)
 End Sub
 
 
-Sub CloyneScraper(SheetName As String)
-	Call AccuWeatherScraper(SheetName, "http://www.accuweather.com/en/ca/cloyne/k0h/daily-weather-forecast/2291535", CloyneAccuStart)
+Sub CloyneScraper(SheetName As String, Optional IsAuto As Boolean = False)
+	Call GeneralScraper(SheetName, "cloyne/k0h/daily-weather-forecast/2291535", IsAuto, CloyneAccuStart)
 End Sub
