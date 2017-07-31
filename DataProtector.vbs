@@ -83,3 +83,24 @@ Sub LockCells(SheetName As String, InputDate As Date, Optional IsAuto As Boolean
 		.SaveCopyAs CreateObject("WScript.Shell").SpecialFolders("Desktop") & Application.PathSeparator & "Backup " & ThisWorkbook.name
 	End With
 End Sub
+
+Sub EditCells(SheetName As String, Optional IsAuto As Boolean = False)
+	Call DebugLogging.PrintMsg("Duplicate found.  Filling blanks" & Switch(IsAuto, "...", True, " as requested by user..."))
+	With ThisWorkbook
+		Call DebugLogging.PrintMsg("Saving server pre-run backup...")
+		.SaveCopyAs "\\APP-SERVER\Data_drive\common_folder\Water Management Files\Pre-Run Backup " & ThisWorkbook.name
+		If Err.Number <> 0 Then
+			If Not IsAuto Then _
+				MsgBox "Failed to save because no network was found"
+			DebugLogging.PrintMsg("Failed to save because no network was found")
+		End If
+		On Error GoTo 0
+
+		Call DebugLogging.PrintMsg("Saving local pre-run backups...")
+
+		.SaveCopyAs "C:\Users\Public\Documents\Pre-Run Backup " & ThisWorkbook.name
+		.SaveCopyAs CreateObject("WScript.Shell").SpecialFolders("Desktop") & Application.PathSeparator & "Pre-Run Backup " & ThisWorkbook.name
+
+		.Sheets(SheetName).Unprotect
+	End With
+End Sub
