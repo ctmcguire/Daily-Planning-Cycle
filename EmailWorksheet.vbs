@@ -47,7 +47,7 @@ Function DailyEmail()
 	' send one copy with SMTP server (with autentication)
 	schema = "http://schemas.microsoft.com/cdo/configuration/"
 	flds.Item(schema & "sendusing") = 2 'Using port
-	flds.Item(schema & "smtpserver") = "mail.mvc.on.ca"
+	flds.Item(schema & "smtpserver") = StrVal(ThisWorkbook.Names("EmailSv"))
 	flds.Item(schema & "smtpserverport") = 25
 	flds.Item(schema & "smtpauthenticate") = cdoBasic
 	flds.Item(schema & "sendusername") = StrVal(ThisWorkbook.Names("EmailUn"))
