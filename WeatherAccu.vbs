@@ -1,13 +1,13 @@
 Option Explicit
 
-Private Function SendXML(xmlhttp As Object) As Integer
-	On Error Resume Next
-	xmlhttp.send
-	If Err.Number <> 0 Then
-		SendXML = 1
-		Exit Function
-	End If
-	SendXML = 0
+Private Function SendXML(xmlhttp As Object) As Boolean
+	On Error GoTo OnError
+	SendXML = False
+	With xmlhttp
+		.send
+		SendXML = .waitForResponse(60000) 'This line either sets SendXML to True, sets it to False, or gets skipped, which leaves SendXML as False
+	End With
+	OnError:
 End Function
 
 Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset As Integer, Optional IsAuto As Boolean = False)
@@ -50,7 +50,7 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 	'The With statement is used to ensure the macro does not modify other workbooks that may be open.
 	With ThisWorkbook
 		'Adds a VBA time stamp to the weather since time is not published on the webpage.
-		If .Sheets(SheetName).Range("B" & Day).Value = "" Then _
+		If IsEmpty(.Sheets(SheetName).Range("B" & Day).Value) Then _
 			.Sheets(SheetName).Range("B" & Day).Value = Format(Now, "yyyy-MM-d hh:mm:ss")
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
@@ -66,22 +66,19 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 			'Your Location's link can be found by searching for your location at 'accuweather.com' and clicking 'Extended'.
 			Url = BaseUrl & "?day=" & i
 
-			If .Sheets(SheetName).Range("A" & Day).Value <> "No Response from AccuWeather" And .Sheets(SheetName).Range("E" & Day).Value <> "" Then _
+			If .Sheets(SheetName).Range("A" & Day).Value <> "No Response from AccuWeather" And .Sheets(SheetName).Range("A" & Day).Value <> "" Then _
 				Goto Continue
 
 			'Creates the xmlhttp object that interacts with the website. .ServerXMLHTTP60 is used so the page data is not cached.
 			Set xmlhttp = New MSXML2.ServerXMLHTTP60
 			With xmlhttp
-				.Open "GET", Url, False
+				.Open "GET", Url, True
 				.setRequestHeader "Content-Type", "text/xml; charset=utf-8"
-				If SendXML(xmlhttp) <> 0 Then
+				If Not SendXML(xmlhttp) Then
 					Set xmlhttp = Nothing
-					ThisWorkbook.Sheets(SheetName).Range("E" & Day).Value = "No Response from AccuWeather"
+					ThisWorkbook.Sheets(SheetName).Range("A" & Day).Value = "No Response from AccuWeather"
 					Goto Continue
 				End If
-				While .READYSTATE <> 4
-					DoEvents
-				Wend
 				HTML_Data = .responseText
 			End With
 
@@ -105,17 +102,20 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<span class=" & Chr(34) & "large-temp" & Chr(34) & ">") + 25, Len(HTML_Data))
 
 			Temp = Mid(HTML_Data, 1, InStr(HTML_Data, "&deg") - 1)
-			.Sheets(SheetName).Range("C" & Day).Value = Temp
+			If IsEmpty(.Sheets(SheetName).Range("C" & Day)) Then _
+				.Sheets(SheetName).Range("C" & Day).Value = Temp
 
 			'Isolates the forecast low.
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<span class=" & Chr(34) & "small-temp" & Chr(34) & ">") + 26, Len(HTML_Data))
 			Temp = Mid(HTML_Data, 1, InStr(HTML_Data, "&deg") - 1)
-			.Sheets(SheetName).Range("D" & Day).Value = Temp
+			If IsEmpty(.Sheets(SheetName).Range("D" & Day)) Then _
+				.Sheets(SheetName).Range("D" & Day).Value = Temp
 
 			'Isolates the forecast condition.
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<span class=" & Chr(34) & "cond" & Chr(34) & ">") + 19, Len(HTML_Data))
 			DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "</span>") - 1)
-			.Sheets(SheetName).Range("B" & Day).Value = DataString
+			If IsEmpty(.Sheets(SheetName).Range("B" & Day)) Then _
+				.Sheets(SheetName).Range("B" & Day).Value = DataString
 
 			'Cuts the HTML code to the precipitation
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<!-- /.feed-tabs -->"), Len(HTML_Data))
@@ -132,22 +132,26 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 				Deg = InStr(HTML_Data, "</span>")
 			End If
 			Temp = Mid(HTML_Data, 1, Deg - 1)
-			.Sheets(SheetName).Range("E" & Day).Value = Temp
+			If IsEmpty(.Sheets(SheetName).Range("E" & Day)) Then _
+				.Sheets(SheetName).Range("E" & Day).Value = Temp
 
 			'Isolates the POP.
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, ">Precipitation") + 14, Len(HTML_Data))
 			DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "</span>") - 1)
-			.Sheets(SheetName).Range("H" & Day).Value = DataString
+			If IsEmpty(.Sheets(SheetName).Range("H" & Day)) Then _
+				.Sheets(SheetName).Range("H" & Day).Value = DataString
 
 			'Isolates the Wind.
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<strong>") + 8, Len(HTML_Data))
 			DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "</strong>") - 1)
-			.Sheets(SheetName).Range("F" & Day).Value = DataString
+			If IsEmpty(.Sheets(SheetName).Range("F" & Day)) Then _
+				.Sheets(SheetName).Range("F" & Day).Value = DataString
 
 			'Isolates the Wind Gusts.
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "Gusts:<strong style=") + 24, Len(HTML_Data))
 			DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "</strong>") - 1)
-			.Sheets(SheetName).Range("G" & Day).Value = DataString
+			If IsEmpty(.Sheets(SheetName).Range("G" & Day)) Then _
+				.Sheets(SheetName).Range("G" & Day).Value = DataString
 
 			'Isolates the day precipitation.
 			'This number is added to the night precipitation and the 24-hour total precipitation is added to the DPC.
@@ -169,7 +173,8 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 			'Isolates the Night precip
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<li>Precipitation: <strong>") + 27, Len(HTML_Data))
 			NightPrecip = DayPrecip + Val(Mid(HTML_Data, 1, InStr(HTML_Data, " mm")))
-			.Sheets(SheetName).Range("K" & Day).Value = NightPrecip
+			If IsEmpty(.Sheets(SheetName).Range("K" & Day)) Then _
+				.Sheets(SheetName).Range("K" & Day).Value = NightPrecip
 
 			'Isolates the Night rain
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<li>Rain: <strong style=" & Chr(34) & Chr(34) & ">") + 27, Len(HTML_Data))
@@ -178,12 +183,14 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 			'Isolates the Night snow
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<li>Snow: <strong style=" & Chr(34) & Chr(34) & ">") + 27, Len(HTML_Data))
 			NightSnow = DaySnow + Val(Mid(HTML_Data, 1, InStr(HTML_Data, " CM")))
-			.Sheets(SheetName).Range("J" & Day).Value = NightSnow
+			If IsEmpty(.Sheets(SheetName).Range("J" & Day)) Then _
+				.Sheets(SheetName).Range("J" & Day).Value = NightSnow
 
 			'Isolates the Night ice
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<li>Ice: <strong style=" & Chr(34) & Chr(34) & ">") + 26, Len(HTML_Data))
 			NightRain = NightRain + Val(Mid(HTML_Data, 1, InStr(HTML_Data, " mm")))
-			.Sheets(SheetName).Range("I" & Day).Value = NightRain
+			If IsEmpty(.Sheets(SheetName).Range("I" & Day)) Then _
+				.Sheets(SheetName).Range("I" & Day).Value = NightRain
 
 			Set xmlhttp = Nothing
 			Continue: 'Label so Goto lines in error checking can go here

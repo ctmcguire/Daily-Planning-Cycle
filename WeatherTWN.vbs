@@ -1,13 +1,13 @@
 Option Explicit
 
-Private Function SendXML(xmlhttp As Object) As Integer
-	On Error Resume Next
-	xmlhttp.send
-	If Err.Number <> 0 Then
-		SendXML = 1
-		Exit Function
-	End If
-	SendXML = 0
+Private Function SendXML(xmlhttp As Object) As Boolean
+	On Error GoTo OnError
+	SendXML = False
+	With xmlhttp
+		.send
+		SendXML = .waitForResponse(60000) 'This line either sets SendXML to True, sets it to False, or gets skipped, which leaves SendXML as False
+	End With
+	OnError:
 End Function
 
 Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset As Integer, Optional IsAuto As Boolean)
@@ -68,19 +68,15 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 		'Creates the xmlhttp object that interacts with the website. .ServerXMLHTTP60 is used so the page data is not cached.
 		Set xmlhttp = New MSXML2.ServerXMLHTTP60
 		'Indicates that page that will receive the request and the type of request being submitted.  Your location's link can be found at: http://legacyweb.theweathernetwork.com/rss/
-		xmlhttp.Open "GET", BaseURL, False
+		xmlhttp.Open "GET", BaseURL, True
 		'Indicate that the body of the request contains form data
 		xmlhttp.setRequestHeader "Content-Type", "text/xml; charset=utf-8"
 		'Send the data as name/value pairs
-		If SendXML(xmlhttp) <> 0 Then
+		If Not SendXML(xmlhttp) Then
 			Set xmlhttp = Nothing
 			.Sheets(SheetName).Range("B" & DayOffset).Value = "No Response from The Weather Network"
 			Exit Sub
 		End If
-		'Pauses the module while the web data loads.
-		While xmlhttp.READYSTATE <> 4
-				DoEvents
-		Wend
 		'Assigns the the website's HTML to the HTML_Data variable.
 		HTML_Data = xmlhttp.responseText
 
@@ -100,7 +96,8 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 		'The 25,569 adds the differece between Jan. 1, 1900 when Excel time starts and Jan. 1, 1970 when UNIX time begins.
 		DPCTimeStamp = (WebTimeStamp / (86400000) + 25569)
 		'The SheetName variable is recieved from the datepicker in the 'Update' form
-		.Sheets(SheetName).Range("C" & DayOffset).Value = DPCTimeStamp
+		If IsEmpty(.Sheets(SheetName).Range("C" & DayOffset)) Then _
+			.Sheets(SheetName).Range("C" & DayOffset).Value = DPCTimeStamp
 
 		For j = 0 to 4 'We aren't using the whole array, so this isn't UBound(Data)
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, Chr(34) & Data(j) & Chr(34) & ":") + Len(Chr(34) & Data(j) & Chr(34) & ":"), Len(HTML_Data))
@@ -117,7 +114,8 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 				DataString = DataString + " km/h"
 			End If
 
-			.Sheets(SheetName).Range(Column(j)).Value = DataString
+			If IsEmpty(.Sheets(SheetName).Range(Column(j))) Then _
+				.Sheets(SheetName).Range(Column(j)).Value = DataString
 		next j
 
 		Call DebugLogging.PrintMsg("TWN - Current conditions extracted.  Extracting short-term forecast...")
@@ -145,7 +143,8 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "timestamp_local") + 18, Len(HTML_Data))
 		WebTimeStamp = Mid(HTML_Data, 1, InStr(HTML_Data, "tzbias") - 3)
 		DPCTimeStamp = (WebTimeStamp / (86400000) + 25569)
-		.Sheets(SheetName).Range("B" & DayOffset + 3).Value = DPCTimeStamp
+		If IsEmpty(.Sheets(SheetName).Range("B" & DayOffset + 3)) Then _
+			.Sheets(SheetName).Range("B" & DayOffset + 3).Value = DPCTimeStamp
 
 		For i = 1 to 5
 			Day = DayOffset + 3 + i
@@ -154,7 +153,8 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "timestampApp_local") + 21, Len(HTML_Data))
 			WebTimeStamp = Mid(HTML_Data, 1, InStr(HTML_Data, "icon") - 3)
 			DPCTimeStamp = (WebTimeStamp / (86400000) + 25569)
-			.Sheets(SheetName).Range("A" & Day).Value = DPCTimeStamp
+			If IsEmpty(.Sheets(SheetName).Range("A" & Day)) Then _
+				.Sheets(SheetName).Range("A" & Day).Value = DPCTimeStamp
 
 			For j = 0 to UBound(Data)
 				HTML_Data = Mid(HTML_Data, InStr(HTML_Data, Chr(34) & Data(j) & Chr(34) & ":") + Len(Chr(34) & Data(j) & Chr(34) & ":"), Len(HTML_Data))
@@ -173,7 +173,8 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 					DataString = DataString + " km/h"
 				End If
 
-				.Sheets(SheetName).Range(Column(j) & Day).Value = DataString
+				If IsEmpty(.Sheets(SheetName).Range(Column(j) & Day)) Then _
+					.Sheets(SheetName).Range(Column(j) & Day).Value = DataString
 			next j
 		next i
 
@@ -196,7 +197,8 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "timestamp_local") + 18, Len(HTML_Data))
 		WebTimeStamp = Mid(HTML_Data, 1, InStr(HTML_Data, "tzbias") - 3)
 		DPCTimeStamp = (WebTimeStamp / (86400000) + 25569)
-		.Sheets(SheetName).Range("B" & DayOffset + 9).Value = DPCTimeStamp
+		If IsEmpty(.Sheets(SheetName).Range("B" & DayOffset + 9)) Then _
+			.Sheets(SheetName).Range("B" & DayOffset + 9).Value = DPCTimeStamp
 
 		For i = 1 To 6
 			Day = DayOffset + 9 + i
@@ -205,7 +207,8 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "timestampApp_local") + 21, Len(HTML_Data))
 			WebTimeStamp = Mid(HTML_Data, 1, InStr(HTML_Data, "icon") - 3)
 			DPCTimeStamp = (WebTimeStamp / (86400000) + 25569)
-			.Sheets(SheetName).Range("A" & Day).Value = DPCTimeStamp
+			If IsEmpty(.Sheets(SheetName).Range("A" & Day)) Then _
+				.Sheets(SheetName).Range("A" & Day).Value = DPCTimeStamp
 
 			For j = 0 To UBound(Data)
 				HTML_Data = Mid(HTML_Data, InStr(HTML_Data, Chr(34) & Data(j) & Chr(34) & ":") + Len(Chr(34) & Data(j) & Chr(34) & ":"), Len(HTML_Data))
@@ -222,7 +225,8 @@ Private Sub TWNWeatherScraper(SheetName As String, BaseURL As String, DayOffset 
 					DataString = DataString + "%"
 				End If
 
-				.Sheets(SheetName).Range(Column(j) & Day).Value = DataString
+				If IsEmpty(.Sheets(SheetName).Range(Column(j) & Day)) Then _
+					.Sheets(SheetName).Range(Column(j) & Day).Value = DataString
 			next j
 		next i
 

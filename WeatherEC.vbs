@@ -1,13 +1,13 @@
 Option Explicit
 
-Private Function SendXML(xmlhttp As Object) As Integer
-	On Error Resume Next
-	xmlhttp.send
-	If Err.Number <> 0 Then
-		SendXML = 1
-		Exit Function
-	End If
-	SendXML = 0
+Private Function SendXML(xmlhttp As Object) As Boolean
+	On Error GoTo OnError
+	SendXML = False
+	With xmlhttp
+		.send
+		SendXML = .waitForResponse(60000) 'This line either sets SendXML to True, sets it to False, or gets skipped, which leaves SendXML as False
+	End With
+	OnError:
 End Function
 
 Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset As Integer, Optional IsAuto As Boolean = False)
@@ -86,19 +86,15 @@ Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset A
 		'Indicates that page that will receive the request and the type of request being submitted.
 		'Your location's link can be found by searching for a local forecast at: http://weather.gc.ca/canada_e.html
 		'After the local forecast has loaded, click on the RSS Weather link underneath the historical data and adjacent to the 'Follow:" text.
-		xmlhttp.Open "GET", BaseURL, False
+		xmlhttp.Open "GET", BaseURL, True
 		'Indicate that the body of the request contains form data
 		xmlhttp.setRequestHeader "Content-Type", "text/xml; charset=utf-8"
 		'Send the data as name/value pairs
-		If SendXML(xmlhttp) <> 0 Then
+		If Not SendXML(xmlhttp) Then
 			Set xmlhttp = Nothing
 			.Sheets(SheetName).Range("B" & (DayOffset)).Value = "No Response from Environment Canada"
 			Exit Sub
 		End If
-		'Pauses the module while the web data loads.
-		While xmlhttp.READYSTATE <> 4
-			DoEvents
-		Wend
 		'Assigns the the website's HTML to the HTML_Data variable.
 		HTML_Data = xmlhttp.responseText
 
@@ -120,7 +116,8 @@ Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset A
 		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<title>") + 7, Len(HTML_Data))
 		DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "</title>") - 1)
 		'The SheetName variable is recieved from the datepicker in the 'Update' form.
-		.Sheets(SheetName).Range("B" & (DayOffset)).Value = DataString
+		If IsEmpty(.Sheets(SheetName).Range("B" & (DayOffset))) Then _
+			.Sheets(SheetName).Range("B" & (DayOffset)).Value = DataString
 
 		For i = 0 to UBound(Data)
 			DataString = "N/A" 'Default value in case some of the data (specifically wind chill) isn't in the html string
@@ -139,7 +136,8 @@ Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset A
 				DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "<br/>") - StrEnd) 'extract the data from the html string
 			End If
 
-			.Sheets(SheetName).Range(Cell(i)).Value = DataString 'Set the value of the appropriate cell
+			If IsEmpty(.Sheets(SheetName).Range(Cell(i))) Then _
+				.Sheets(SheetName).Range(Cell(i)).Value = DataString 'Set the value of the appropriate cell
 		next i
 
 		Call DebugLogging.PrintMsg("EC - Current conditions extracted.  Extracting long-term forecast...")
@@ -155,18 +153,21 @@ Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset A
 			'Isolates the 7 day forecast day.
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<title>") + 7, Len(HTML_Data))
 			DataString = Mid(HTML_Data, 1, InStr(HTML_Data, ":"))
-			.Sheets(SheetName).Range("A" & Day).Value = DataString
+			If IsEmpty(.Sheets(SheetName).Range("A" & Day)) Then _
+				.Sheets(SheetName).Range("A" & Day).Value = DataString
 			'Isolates the 7 day forecast data.
 			'Chr(34) returns a double quotation mark (") and is used to prevent runtime errors.
 			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<summary type=" & Chr(34) & "html" & Chr(34) & ">") + 21, Len(HTML_Data))
 			DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "Forecast issued") - 1)
-			.Sheets(SheetName).Range("B" & Day).Value = DataString
+			If IsEmpty(.Sheets(SheetName).Range("B" & Day)) Then _
+				.Sheets(SheetName).Range("B" & Day).Value = DataString
 		next i
 
 		'Isolates the Long Term Forecast time issued.
 		HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "Forecast") + 0, Len(HTML_Data))
 		DataString = Mid(HTML_Data, 1, InStr(HTML_Data, "</summary>") - 1)
-		.Sheets(SheetName).Range("A" & DayOffset + 6).Value = DataString
+		If IsEmpty(.Sheets(SheetName).Range("A" & DayOffset + 6)) Then _
+			.Sheets(SheetName).Range("A" & DayOffset + 6).Value = DataString
 
 		'Once the 7th day's forecast is loaded, the xmlhttp is set to 'Nothing' to prevent caching and the module closes.
 		Set xmlhttp = Nothing
