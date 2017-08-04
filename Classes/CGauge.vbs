@@ -93,7 +93,6 @@ Public Sub LoadData(SheetName As String, Row As Integer, Optional IsAuto As Bool
 	If Not pInitialized Then _
 		Exit Sub
 	With ThisWorkbook.Sheets(SheetName)
-		'.Cells(Row, "G").Formula = GetFormula(SheetName, Row) 'I'm commenting this out for now to avoid confusion caused by having the previous reading formulas being set both here and in Raw2
 		If pID = "N/A" Then _
 			Exit Sub
 		For Each Sensor In pSensors
@@ -102,34 +101,3 @@ Public Sub LoadData(SheetName As String, Row As Integer, Optional IsAuto As Bool
 		Next
 	End With
 End Sub
-
-'This isn't really necessary, since it could easily just get put into the Formula bar, but since it is a long formula this will probably be easier to read and understand
-Private Function GetFormula(SheetName As String, Row As Integer)
-	Dim PrevSheet As String 'Formula for getting the previous sheet name (Daily and Stream gauges use a static value)
-	Dim StartPoint As String 'Formula for getting the start of the range of cells to look in
-	Dim EndPoint As String 'Formula for getting the end of the range of cells to look in
-	Dim PrevRow As String 'Formula for getting the row of the previous reading in the previous sheet
-
-	PrevSheet = "IF(YEAR(F" & Row & ")<YEAR($B$6),""'Dec 31'!"",""'""&TEXT(F" & Row & ",""mmm d"")&""'!"")" 'Decideds whether to use the date in column F or Dec 31st
-	If ThisWorkbook.Sheets(SheetName).Cells(Row, "F").Formula = "=+B" & Row & "-1" Then _
-		PrevSheet = """'" & Format(CDate(SheetName) - 1, "mmm d") & "'!""" 'Daily and stream gauges are hardcoded.  This is mostly because the F column for high falls is different from the others
-
-	StartPoint = "MATCH(""Staff Gauge"",INDIRECT(" & PrevSheet & " & ""A:A"")" 'Assume it is a weekly gauge first
-	EndPoint = "MATCH(""Dam Operations:"",INDIRECT(" & PrevSheet & " & ""A:A"")"
-
-	'If it isn't a weekly gauge, it is either a daily gauge or a stream gauge
-	If Row < WeeklyStart Then
-		EndPoint = StartPoint 'Weekly gauges start where daily gauges end
-		StartPoint = "MATCH(""Lake Gauge"",INDIRECT(" & PrevSheet & " & ""A:A"")" 'Assume it is daily gauge next, since that let's us use the above line
-	End If
-
-	'If it isn't a weekly gauge OR a daily gauge, it must be a stream gauge
-	If Row < DailyStart Then
-		EndPoint = StartPoint 'Daily gauges start where stream gauges end
-		StartPoint = "MATCH(""Stream Gauge"",INDIRECT(" & PrevSheet & " & ""A:A"")"
-	End If
-
-	PrevRow = "MATCH(A6,INDIRECT(" & PrevSheet & " & ""A"" & " & Startpoint & "+1 & "":A"" & " & Endpoint & "),0) + " & Startpoint & "" 'Get the row for the previous reading
-
-	GetFormula = "=INDIRECT(" & PrevSheet & "&""E"" & " & PrevRow 'Get the previous reading
-End Function
