@@ -12,7 +12,8 @@ Public Function PrintMsg(Optional Txt As String = "")
 	If Not Txt = "" Then _
 		DebugMsg = DebugMsg & "[" & Now & "] " & Txt & vbCrLf 'Don't add text if no input is given
 	PrintMsg = DebugMsg 'Return to get the value of DebugMsg
-	Call ChangeStatus(DebugMsg)
+	If Not Txt = "" Then _
+		Call ChangeStatus(Txt)
 End Function
 
 Public Sub Clear()
