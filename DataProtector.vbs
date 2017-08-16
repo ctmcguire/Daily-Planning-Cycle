@@ -39,7 +39,7 @@ Sub LockCells(SheetName As String, InputDate As Date, Optional IsAuto As Boolean
 			'The sheet from 7 days before the current date is unprotected.
 			.Sheets(PrevDate).Unprotect
 			'The previously unlocked cells are locked.
-			.Sheets(PrevDate).Range("A1:M" & AccuStart - 1).Locked = True
+			.Sheets(PrevDate).Range(LockRange).Locked = True
 			'The entire sheet is now protected.
 			.Sheets(PrevDate).Protect
 		End With
@@ -49,7 +49,7 @@ Sub LockCells(SheetName As String, InputDate As Date, Optional IsAuto As Boolean
 	With ThisWorkbook
 		Call DebugLogging.PrintMsg("Protecting worksheet...")
 
-		.Sheets(SheetName).Range("A1:M" & AccuStart - 1).Locked = False 'The cells containing gauge data are unlocked.
+		.Sheets(SheetName).Range(LockRange).Locked = False 'The cells containing gauge data are unlocked.
 		'The sheet is protected and by default, the weather data is locked.
 		.Sheets(SheetName).Protect AllowInsertingRows:=True, AllowFormattingCells:=True, AllowFormattingColumns:=True, AllowFormattingRows:=True
 

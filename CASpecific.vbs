@@ -16,7 +16,6 @@ Private ATemp As CGaugeSensor
 Private WTemp As CGaugeSensor
 Private Batt As CGaugeSensor
 
-Public Const StageName As String = "Stage"
 Public Const FlowName As String = "Flow"
 Public Const LevelName As String = "Level"
 Public Const Rain24HName As String = "Precipitation (last 24 hours)"
@@ -41,6 +40,8 @@ Public Const flowStart As Integer = FlowOffset
 Public Const dailyStart As Integer = flowStart + flowCount + FlowToDailyGap
 Public Const weeklyStart As Integer = dailyStart + dailyCount + DailyToWeeklyGap
 Public Const DataToWeatherGap As Integer = 12
+
+Public Const LockRange As String = "A1:P" & (weeklyStart + weeklyCount + DataToWeatherGap -1)
 
 
 '/**
