@@ -108,8 +108,8 @@ Private Sub ECWeatherScraper(SheetName As String, BaseURL As String, DayOffset A
 		'The InStr function searches the code for the string that precedes the relevant data: '<rights>Copyright 2016, Environment Canada</rights>'.
 		'The InStr function then returns the number of characters from the start of the HTML code to the start of this string.
 		'The Mid function then deletes every character before this number
-		If InStr(HTML_Data, "<rights>Copyright 2016, Environment Canada</rights>") > 0 Then
-			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, "<rights>Copyright 2016, Environment Canada</rights>"), Len(HTML_Data))
+		If InStr(HTML_Data, ", Environment Canada</rights>") > 0 Then
+			HTML_Data = Mid(HTML_Data, InStr(HTML_Data, ", Environment Canada</rights>"), Len(HTML_Data))
 		End If
 
 		'Isolates the watches and warnings string.
