@@ -25,12 +25,12 @@ Sub CreateSheet(SheetName As String, InputDate As Date)
 		.Sheets(SheetName).Range("A3").Value = ThisWorkbook.Sheets("Raw2").Range("A3:P200").Value
 		.Sheets(SheetName).Range("A3").Formula = ThisWorkbook.Sheets("Raw2").Range("A3:P200").Formula
 
+		Dim btn As Button
 		Call DebugLogging.PrintMsg("Cells copied.  Adding WebUpdate button (you may want to remove this next part if you don't use the WebUpdate Macro)...")
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
 		'The dashboard buttons are inserted into the new sheet and formatted.
 		'The button labels 'Upload2Web' and 'PrintDPC' are defined on the Raw2 sheet and can be edited to the left of the Forumla Bar.
-		Dim btn As Button
 
 		Set btn = .Sheets(SheetName).Buttons.Add(100, 5, 90, 25)
 		With btn
