@@ -65,7 +65,8 @@ Private Function SufficientConnections()
 	Dim nm As Name
 	For Each nm In ThisWorkbook.Sheets("Raw1").Names
 		'The previously loaded data in 'Raw1' is deleted to make room for the new data.
-		ThisWorkbook.Sheets("Raw1").Range(Replace(Replace(nm, "='Raw1'!", ""), "$", "")).ClearContents
+		If Replace(Replace(nm, "='Raw1'!", ""), "$", "") <> "#REF!" Then _
+			ThisWorkbook.Sheets("Raw1").Range(Replace(Replace(nm, "='Raw1'!", ""), "$", "")).ClearContents
 		nm.Delete
 	Next nm
 
