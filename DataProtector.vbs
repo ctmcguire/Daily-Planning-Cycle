@@ -69,7 +69,7 @@ Sub LockCells(SheetName As String, InputDate As Date, Optional IsAuto As Boolean
 
 		'A backup copy is saved to the 'Water Management Files' folder and the local desktop.
 		On Error Resume Next
-		.SaveCopyAs "\\APP-SERVER\Data_drive\common_folder\Water Management Files\Backup " & ThisWorkbook.name
+		.SaveCopyAs BackupFolder & "\Backup " & ThisWorkbook.name
 		If Err.Number <> 0 Then
 			If Not IsAuto Then _
 				MsgBox "Failed to save because no network was found"

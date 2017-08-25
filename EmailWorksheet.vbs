@@ -57,7 +57,7 @@ Function DailyEmail()
 
 	'details of the email sent to water-management@mvc.on.ca or cmcguire@mvc.on.ca
 	With imsg
-		.To = "cmcguire@mvc.on.ca; gmountenay@mvc.on.ca; jnorth@mvc.on.ca; water-management@mvc.on.ca"
+		.To = Recipients
 		.from = StrVal(ThisWorkbook.Names("EmailUn"))
 		.Sender = "DPC System"
 		.Subject = "Daily Update for " + date1
