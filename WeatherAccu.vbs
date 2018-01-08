@@ -5,8 +5,9 @@ Private Function SendXML(xmlhttp As Object) As Boolean
 	SendXML = False
 	With xmlhttp
 		.send
-		SendXML = .waitForResponse(60000) 'This line either sets SendXML to True, sets it to False, or gets skipped, which leaves SendXML as False
+		'SendXML = .waitForResponse(60000) 'This line either sets SendXML to True, sets it to False, or gets skipped, which leaves SendXML as False
 	End With
+	SendXML = True
 	OnError:
 End Function
 
@@ -70,9 +71,9 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 				Goto Continue
 
 			'Creates the xmlhttp object that interacts with the website. .ServerXMLHTTP60 is used so the page data is not cached.
-			Set xmlhttp = New MSXML2.ServerXMLHTTP60
+			Set xmlhttp = New MSXML2.XMLHTTP60
 			With xmlhttp
-				.Open "GET", Url, True
+				.Open "GET", Url, False
 				.setRequestHeader "Content-Type", "text/xml; charset=utf-8"
 				If Not SendXML(xmlhttp) Then
 					Set xmlhttp = Nothing
