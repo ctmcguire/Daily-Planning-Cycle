@@ -61,6 +61,8 @@ Public Function UpdateDPCByAuto()
 	SheetName = Format(Date, "mmm d")
 	SheetDay = Date + TimeSerial(6, 0, 0)
 
+	DataProtector.SavePreBackup(True)
+
 	Call Start
 	Call UpdateDPC(SheetName, SheetDay, True)
 	Call Finish
