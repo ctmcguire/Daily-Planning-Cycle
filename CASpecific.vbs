@@ -44,7 +44,7 @@ Public Const DataToWeatherGap As Integer = 12
 Public Const LockRange As String = "A1:P" & (weeklyStart + weeklyCount + DataToWeatherGap -1)
 Public Const BackupFolder As String = "\\APP-SERVER\Data_drive\common_folder\Water Management Files"
 
-Public Const Recipients As String = "cmcguire@mvc.on.ca; gmountenay@mvc.on.ca; jnorth@mvc.on.ca; water-management@mvc.on.ca"
+Public Const Recipients As String = "cmcguire@mvc.on.ca; gmountenay@mvc.on.ca; jnorth@mvc.on.ca; abroadbent@mvc.on.ca; jprice@mvc.on.ca; plehman@mvc.on.ca"
 
 
 '/**
