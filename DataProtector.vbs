@@ -84,8 +84,7 @@ Sub LockCells(SheetName As String, InputDate As Date, Optional IsAuto As Boolean
 	End With
 End Sub
 
-Sub EditCells(SheetName As String, Optional IsAuto As Boolean = False)
-	Call DebugLogging.PrintMsg("Duplicate found.  Filling blanks" & Switch(IsAuto, "...", True, " as requested by user..."))
+Sub SavePreBackup(Optional IsAuto As Boolean = False)
 	With ThisWorkbook
 		Call DebugLogging.PrintMsg("Saving server pre-run backup...")
 		.SaveCopyAs "\\APP-SERVER\Data_drive\common_folder\Water Management Files\Pre-Run Backup " & ThisWorkbook.name
@@ -100,7 +99,14 @@ Sub EditCells(SheetName As String, Optional IsAuto As Boolean = False)
 
 		.SaveCopyAs "C:\Users\Public\Documents\Pre-Run Backup " & ThisWorkbook.name
 		.SaveCopyAs CreateObject("WScript.Shell").SpecialFolders("Desktop") & Application.PathSeparator & "Pre-Run Backup " & ThisWorkbook.name
+	End With
+End Sub
 
+Sub EditCells(SheetName As String, Optional IsAuto As Boolean = False)
+	Call DebugLogging.PrintMsg("Duplicate found.  Filling blanks" & Switch(IsAuto, "...", True, " as requested by user..."))
+	With ThisWorkbook
+		If Not IsAuto Then _
+			SavePreBackup()
 		.Sheets(SheetName).Unprotect
 	End With
 End Sub

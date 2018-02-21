@@ -125,16 +125,17 @@ End Function
 Private Function LoadKiWIS(Optional IsAuto As Boolean = False)
 	LoadKiWIS = True
 
-	ThisWorkbook.Sheets("Raw1").QueryTables("ExternalData_" & pRangeIndex).Connection = "URL;" & UrlKiWIS()
-	On Error Resume Next
-	ThisWorkbook.Sheets("Raw1").QueryTables("ExternalData_" & pRangeIndex).Refresh(False)
-	If Err.Number <> 0 Then
-		On Error Goto 0
-		If Not IsAuto Then _
-			MsgBox "KiWIS Loader has failed"
-		LoadKiWIS = False
-		Exit Function
-	End If
+	With ThisWorkbook.Sheets("Raw1").QueryTables("ExternalData_" & pRangeIndex)
+		.Connection = "URL;" & UrlKiWIS()
+		On Error Resume Next
+		.Refresh(False)
+		If Err.Number <> 0 Then
+			DebugLogging.Erred
+			On Error Goto 0
+			LoadKiWIS = False
+			Exit Function
+		End If
+	End With
 End Function
 
 Public Function Value(ID As String, Optional IsAuto As Boolean = False)

@@ -5,7 +5,6 @@ Private Function SendXML(xmlhttp As Object) As Boolean
 	SendXML = False
 	With xmlhttp
 		.send
-		'SendXML = .waitForResponse(60000) 'This line either sets SendXML to True, sets it to False, or gets skipped, which leaves SendXML as False
 	End With
 	SendXML = True
 	OnError:
