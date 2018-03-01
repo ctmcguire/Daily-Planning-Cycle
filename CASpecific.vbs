@@ -250,6 +250,7 @@ Sub InitializeGauges()
 	i = i + 1
 
 	DailyGauges(i).CGauge "Gauge - Widow Lake", "Widow Lake"
+	DailyGauges(i).Add Level, WTemp, Batt
 	i = i + 1
 
 
