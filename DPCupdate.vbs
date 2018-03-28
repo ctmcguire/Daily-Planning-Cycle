@@ -59,7 +59,7 @@ End Sub
 
 Public Function UpdateDPCByAuto()
 	SheetName = Format(Date, "mmm d")
-	SheetDay = Date + TimeSerial(6, 0, 0)
+	SheetDay = Date + TimeSerial(5, 0, 0)
 
 	DataProtector.SavePreBackup(True)
 
