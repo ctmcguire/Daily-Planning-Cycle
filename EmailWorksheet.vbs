@@ -85,6 +85,8 @@ Function DailyEmail()
 			Call DebugLogging.PrintMsg("Marking worksheet as sent...")
 			ThisWorkbook.Sheets(date1).Range("H1").Value = "Email sent at " & Now
 			ThisWorkbook.Save
+		Else
+			Call DebugLogging.Erred
 		End If
 		On Error GoTo OnError 'Go back to using to default error handler
 	End With
