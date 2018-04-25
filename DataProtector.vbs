@@ -84,6 +84,46 @@ Sub LockCells(SheetName As String, InputDate As Date, Optional IsAuto As Boolean
 	End With
 End Sub
 
+Private Function GetMnth(ShNm As String)
+	GetMnth = Mid(ShNm,1,3)
+	Dim i
+	For Each i in Array("am ", "pm ")
+		If 1 < InStr(2, Mid(ShNm,1,5), "" & i) And InStr(2, Mid(ShNm,1,5), "" & i) < 4 Then
+			GetMnth = Mid(ShNm, InStr(2, Mid(ShNm,1,5), "" & i) + Len("" & i), 3)
+			Exit Function
+		End If
+	Next
+End Function
+Function SaveNextYear()
+	Dim FileName As String
+	Call DebugLogging.Clear()
+	With ThisWorkbook
+		FileName = Replace(.name, Year(Now), Year(DateAdd("yyyy", 1, Now)))
+		.SaveAs .path & "\" & FileName
+
+		Dim DPCsheet As Excel.Worksheet
+		For Each DPCsheet in .Worksheets
+			Dim mnth
+			With DPCsheet
+				Dim ShNm As String
+				ShNm = GetMnth(.name)
+				For Each mnth In Array("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","")
+					If ShNm = "" & mnth Then _
+						Exit For
+				Next
+				If mnth = "" Then _
+					Goto continue
+				Application.DisplayAlerts = False
+				DPCsheet.Delete
+				Application.DisplayAlerts = True
+				continue:
+			End With
+		Next
+		.Save
+	End With
+	SaveNextYear = DebugLogging.PrintMsg()
+End Function
+
 Sub SavePreBackup(Optional IsAuto As Boolean = False)
 	With ThisWorkbook
 		Call DebugLogging.PrintMsg("Saving server pre-run backup...")
@@ -106,7 +146,7 @@ Sub EditCells(SheetName As String, Optional IsAuto As Boolean = False)
 	Call DebugLogging.PrintMsg("Duplicate found.  Filling blanks" & Switch(IsAuto, "...", True, " as requested by user..."))
 	With ThisWorkbook
 		If Not IsAuto Then _
-			SavePreBackup()
+			Call SavePreBackup()
 		.Sheets(SheetName).Unprotect
 	End With
 End Sub
