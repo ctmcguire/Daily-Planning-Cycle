@@ -1,4 +1,4 @@
-'CGaugeSensor Class
+'CSumGaugeSensor Class
 'Implements IGaugeSensor
 
 Private pName As String 'What value the gauge sensor measures (flow, level, precipitation, etc)
@@ -13,13 +13,11 @@ Private pStartOffset As Integer
 Private pIsPrev As Boolean
 Private pIsSum As Boolean 'Whether or not this Sensor is a summation of values
 
-Private pOriginal As CGaugeSensor
+Private pOriginal As CSumGaugeSensor
 Private pIsClone As Boolean
 
 Private pInitialized As Boolean
 Private pLoadedKiWIS As Boolean
-
-Private pReturnFields As String
 
 
 Public Sub Class_Initialize()
@@ -28,32 +26,10 @@ Public Sub Class_Initialize()
 	pLoadedKiWIS = False
 End Sub
 
-'/**
-' * The CGaugeSensor Function is used to initialize the values in a new CGaugeSensor Object in place of its constructor.
-' * This is due mostly to the fact that VBA does not support constructors with parameters, resulting in the 
-' * need for this function.
-' * 
-' * @param Name   - The name of what this Sensor measures
-' * @param Column - The letter of the column for this sensor in the dpc tables
-' * @param RangeIndex - The external range that holds the data for this CGaugeSensor
-' * @param TsId - The timeseries group id for this CGaugeSensor
-' * @param StartTime - The minimum timestamp for the KiWIS data being retrieved.  <InDate> can be substituted for an hour to get the input date's hour.  Defaults to 5 seconds before the input hour.
-' * @param StartOffset - If <InDate> is used in StartTime, this is the number of hours that will be subtracted from it.  This will not do anything if StartTime does not contain <InDate>.  Defaults to 1.
-' * @param EndTime - The maximum timestamp for the KiWIS data being retrieved.  Like with StartTime, <InDate> can be used to get the input date's hour.  Defaults to 5 seconds after the input hour.
-' * @param IsPrev - Whether or not this Sensor measures data from the previous day.  Will get the previous day's data if set to true.  Defaults to false.
-' * @param IsSum - Whether or not this Sensor should get the sum of its returned data.  Only really meant to apply to the "rainfall to 0600" column at this point in time.  Defaults to false.
-' * 
-' * @returns - This function does not return anything
-' * 
-' * 
-' * Example usage:
-' * 				Sensor.CGaugeSensor "Flow Rate", "E", 3, 124004
-' * The above example initializes the CGaugeSensor Sensor with a Name of "Flow Rate", sets its column to "E", sets its range index to 3 (for ExternalData_3), and sets its timeseries group id to 124004.
-'**/
-Public Sub CGaugeSensor(Name As String, Column As String, RangeIndex As Integer, TsId As String, _
+Public Sub CSumGaugeSensor(Name As String, Column As String, RangeIndex As Integer, TsId As String, _
 						Optional StartTime As String = "<InDate>:59:55.000-05:00", Optional StartOffset As Integer = 1, _
 						Optional EndTime As String = "<InDate>:00:05.000-05:00", _
-						Optional IsPrev = False, Optional IsSum = False, Optional ReturnFields = "Timestamp,Value")
+						Optional IsPrev = False)
 	If pInitialized Then _
 		Exit Sub
 	pName = Name
@@ -68,12 +44,10 @@ Public Sub CGaugeSensor(Name As String, Column As String, RangeIndex As Integer,
 	pIsPrev = IsPrev
 	pIsSum = IsSum
 
-	pReturnFields = ReturnFields
-
 	pInitialized = True
 End Sub
 
-Public Sub Clone(Original As CGaugeSensor, Optional Column As String = "")
+Public Sub Clone(Original As CSumGaugeSensor, Optional Column As String = "")
 	If pInitialized Then _
 		Exit Sub
 	Set pOriginal = Original
@@ -118,27 +92,21 @@ Private Function FromTo(InDate As Date)
 
 	If Not pInitialized Then _
 		Exit Function
-	FrVal = ""
-	ToVal = ""
 
 	DateVal = Format(InDate - Switch(pIsPrev, 1, True, 0), "yyyy-mm-dd") 'Switch(cond1,value1,...) returns the first value corresponding to a condition that evaluates to true
-	If Not pStartTime = "" Then _
-		FrVal = "&from=" & DateVal & "T" & Replace(pStartTime, "<InDate>", Hour(InDate)-pStartOffset)
-	If Not pEndTime = "" Then _
-		ToVal = "&to=" & DateVal & "T" & Replace(pEndTime, "<InDate>", Hour(InDate))
+	FrVal = "&from=" & DateVal & "T" & Replace(pStartTime, "<InDate>", Hour(InDate)-pStartOffset)
+	ToVal = "&to=" & DateVal & "T" & Replace(pEndTime, "<InDate>", Hour(InDate))
 
 	FromTo = FrVal & ToVal
 End Function
 
 Private Function UrlKiWIS()
 	Dim BaseUrl As String
-	Dim ReturnFields As String
 
 	If Not pInitialized Then _
 		Exit Function
 
 	BaseUrl = "http://waterdata.quinteconservation.ca/KiWIS/KiWIS?service=kisters&type=queryServices&request=getTimeseriesValues&datasource=0&format=html&metadata=true&md_returnfields=station_name,parametertype_name&dateformat=yyyy-MM-dd%27T%27HH:mm:ss&timeseriesgroup_id="
-	ReturnFields = "&returnfields=" & pReturnFields
 
 	UrlKiWIS = BaseURL & pTsId & FromTo(SheetDay)
 End Function
@@ -176,11 +144,6 @@ Public Function Value(ID As String, Optional IsAuto As Boolean = False)
 	End If
 
 	Range = GetRange()
-
-'	If pIsSum Then
-'		Value = Sum(ID, Range)
-'		Exit Function
-'	End If
 	Value = GetData(ID, Range)
 End Function
 
@@ -208,10 +171,6 @@ Private Function GetRange()
 End Function
 
 Private Function GetData(ID As String, Range As String)
-	GetData = Application.WorksheetFunction.Index(ThisWorkbook.Sheets("Raw1").Range(Range), (Application.WorksheetFunction.Match(ID, ThisWorkbook.Sheets("Raw1").Range(Range), 0) + 5))
-End Function
-
-Private Function Sum(ID As String, Range As String)
 	Dim Column As String
 	Dim i As Integer
 	For i = 1 To Len(Range)
@@ -223,12 +182,12 @@ Private Function Sum(ID As String, Range As String)
 	
 	With ThisWorkbook.Sheets("Raw1")
 		If Not (.Range(Column & (Application.WorksheetFunction.Match(ID, .Range(Range), 0) + 3))) = 7 Then
-			Sum = ""
+			GetData = ""
 			Exit Function
 		End If
 
 		Dim Row As Integer
 		Row = Application.WorksheetFunction.Match(ID, .Range(Range), 0) + 6
-		Sum = Application.WorksheetFunction.Sum(.Range(Column & Row, Column & Row+12))
+		GetData = Application.WorksheetFunction.Sum(.Range(Column & Row, Column & Row+12))
 	End With
 End Function

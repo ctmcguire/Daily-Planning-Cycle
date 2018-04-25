@@ -2,7 +2,8 @@
 'Implements IGaugeSensor
 
 Private pName As String 'What value the gauge sensor measures (flow, level, precipitation, etc)
-Private pColumn As String 'Column where this sensor's data will appear in the table
+Private pColumn As String 'Column where this sensor's tag data will appear in the table
+'Private pColumnC As String 'Column where this sensor's remark data will appear in the table
 Private pRangeIndex As Integer 'Column where this sensor's data is retrieved from in raw1
 Private pTsId As String
 
@@ -13,13 +14,11 @@ Private pStartOffset As Integer
 Private pIsPrev As Boolean
 Private pIsSum As Boolean 'Whether or not this Sensor is a summation of values
 
-Private pOriginal As CGaugeSensor
+Private pOriginal As CTagGaugeSensor
 Private pIsClone As Boolean
 
 Private pInitialized As Boolean
 Private pLoadedKiWIS As Boolean
-
-Private pReturnFields As String
 
 
 Public Sub Class_Initialize()
@@ -28,7 +27,6 @@ Public Sub Class_Initialize()
 	pLoadedKiWIS = False
 End Sub
 
-'/**
 ' * The CGaugeSensor Function is used to initialize the values in a new CGaugeSensor Object in place of its constructor.
 ' * This is due mostly to the fact that VBA does not support constructors with parameters, resulting in the 
 ' * need for this function.
@@ -50,10 +48,10 @@ End Sub
 ' * 				Sensor.CGaugeSensor "Flow Rate", "E", 3, 124004
 ' * The above example initializes the CGaugeSensor Sensor with a Name of "Flow Rate", sets its column to "E", sets its range index to 3 (for ExternalData_3), and sets its timeseries group id to 124004.
 '**/
-Public Sub CGaugeSensor(Name As String, Column As String, RangeIndex As Integer, TsId As String, _
+Public Sub CTagGaugeSensor(Name As String, Column As String, RangeIndex As Integer, TsId As String, _
 						Optional StartTime As String = "<InDate>:59:55.000-05:00", Optional StartOffset As Integer = 1, _
 						Optional EndTime As String = "<InDate>:00:05.000-05:00", _
-						Optional IsPrev = False, Optional IsSum = False, Optional ReturnFields = "Timestamp,Value")
+						Optional IsPrev = False)
 	If pInitialized Then _
 		Exit Sub
 	pName = Name
@@ -66,14 +64,11 @@ Public Sub CGaugeSensor(Name As String, Column As String, RangeIndex As Integer,
 	pStartOffset = StartOffset
 
 	pIsPrev = IsPrev
-	pIsSum = IsSum
-
-	pReturnFields = ReturnFields
 
 	pInitialized = True
 End Sub
 
-Public Sub Clone(Original As CGaugeSensor, Optional Column As String = "")
+Public Sub Clone(Original As CTagGaugeSensor, Optional Column As String = "")
 	If pInitialized Then _
 		Exit Sub
 	Set pOriginal = Original
@@ -97,7 +92,7 @@ End Property
 
 Public Property Get Name()
 	If pIsClone Then
-		Name = pOriginal.Name
+		Name = pOriginal.Name & "_comment"
 		Exit Function
 	End If
 	Name = pName
@@ -138,9 +133,9 @@ Private Function UrlKiWIS()
 		Exit Function
 
 	BaseUrl = "http://waterdata.quinteconservation.ca/KiWIS/KiWIS?service=kisters&type=queryServices&request=getTimeseriesValues&datasource=0&format=html&metadata=true&md_returnfields=station_name,parametertype_name&dateformat=yyyy-MM-dd%27T%27HH:mm:ss&timeseriesgroup_id="
-	ReturnFields = "&returnfields=" & pReturnFields
+	ReturnFields = "&returnFields=Timestamp,Data%20Comment"
 
-	UrlKiWIS = BaseURL & pTsId & FromTo(SheetDay)
+	UrlKiWIS = BaseURL & pTsId & FromTo(SheetDay) & ReturnFields
 End Function
 
 Private Function LoadKiWIS(Optional IsAuto As Boolean = False)
@@ -160,15 +155,24 @@ Private Function LoadKiWIS(Optional IsAuto As Boolean = False)
 End Function
 
 Public Function Value(ID As String, Optional IsAuto As Boolean = False)
-	Dim Range As String
 
 	If Not pInitialized Then _
 		Exit Function
 	If IsClone Then
-		Value = pOriginal.Value(ID)
+		Value = pOriginal.CmtValue(ID, IsAuto)
 		Exit Function
 	End If
 
+	Value = TagValue(ID, IsAuto)
+End Function
+
+Public Function TagValue(ID As String, Optional IsAuto As Boolean = False)
+	TagValue = ""
+	Dim dat As String
+	Dim Range As String
+
+	If Not pInitialized Then _
+		Exit Function
 	If Not pLoadedKiWIS Then
 		If Not LoadKiWIS(IsAuto) Then _
 			Exit Function
@@ -176,12 +180,56 @@ Public Function Value(ID As String, Optional IsAuto As Boolean = False)
 	End If
 
 	Range = GetRange()
+	dat = GetData(ID, Range)
 
-'	If pIsSum Then
-'		Value = Sum(ID, Range)
-'		Exit Function
-'	End If
-	Value = GetData(ID, Range)
+	if Len(dat) = 0 Then _
+		Exit Function
+	if InStr(dat, "[C] Calm") <> 0 Then _
+		TagValue = "C"
+	if InStr(dat, "[W] Wavy") <> 0 Then _
+		TagValue = "W"
+	if InStr(dat, "[D] Draw") <> 0 Then _
+		TagValue = "D"
+	if InStr(dat, "[S] Slight Swell") <> 0 Then _
+		TagValue = "SS"
+	if InStr(dat, "[I] Ice") <> 0 Then _
+		TagValue = "I"
+	if InStr(dat, "[R] Rust") <> 0 Then _
+		TagValue = "R"
+End Function
+Public Function CmtValue(ID As String, Optional IsAuto As Boolean = False)
+	CmtValue = ""
+	Dim dat As String
+	Dim Range As String
+	Dim tag As Integer
+
+	If Not pInitialized Then _
+		Exit Function
+	If Not pLoadedKiWIS Then
+		If Not LoadKiWIS(IsAuto) Then _
+			Exit Function
+		pLoadedKiWIS = True
+	End If
+
+	Range = GetRange()
+	dat = GetData(ID, Range)
+
+	if InStr(dat, ";") = 0 Then _
+		Exit Function
+	tag = InStr(dat, "[C] Calm")
+	if tag = 0 Then _
+		tag = InStr(dat, "[W] Wavy")
+	if tag = 0 Then _
+		tag = InStr(dat, "[D] Draw")
+	if tag = 0 Then _
+		tag = InStr(dat, "[S] Slight Swell")
+	if tag = 0 Then _
+		tag = InStr(dat, "[I] Ice")
+	if tag = 0 Then _
+		tag = InStr(dat, "[R] Rust")
+	CmtValue = Mid(dat, 1, InStr(dat, ";")-1)
+	if tag < InStr(dat, ";") Then _
+		CmtValue = Mid(dat, InStr(dat, ";") + 1)
 End Function
 
 Private Function GetRange()
@@ -209,26 +257,4 @@ End Function
 
 Private Function GetData(ID As String, Range As String)
 	GetData = Application.WorksheetFunction.Index(ThisWorkbook.Sheets("Raw1").Range(Range), (Application.WorksheetFunction.Match(ID, ThisWorkbook.Sheets("Raw1").Range(Range), 0) + 5))
-End Function
-
-Private Function Sum(ID As String, Range As String)
-	Dim Column As String
-	Dim i As Integer
-	For i = 1 To Len(Range)
-		Column = Left(Range, i)
-		If 0 < Val(Column) Then _
-			Exit For
-		Column = Left(Range, 1)
-	Next i
-	
-	With ThisWorkbook.Sheets("Raw1")
-		If Not (.Range(Column & (Application.WorksheetFunction.Match(ID, .Range(Range), 0) + 3))) = 7 Then
-			Sum = ""
-			Exit Function
-		End If
-
-		Dim Row As Integer
-		Row = Application.WorksheetFunction.Match(ID, .Range(Range), 0) + 6
-		Sum = Application.WorksheetFunction.Sum(.Range(Column & Row, Column & Row+12))
-	End With
 End Function

@@ -5,16 +5,21 @@ Option Explicit
 ' * other files can of course be modified, but doing so will risk the modified files needing to be re-modified whenever these files get updated.
 ' */
 
-Public Const SensorCount As Integer = 7
+Public Const SensorCount As Integer = 9
 
 Private Stage As CGaugeSensor
 Private Flow As CGaugeSensor
 Private Level As CGaugeSensor
 Private Rain24H As CGaugeSensor
-Private Rain As CGaugeSensor
+Private Rain As CSumGaugeSensor
 Private ATemp As CGaugeSensor
 Private WTemp As CGaugeSensor
 Private Batt As CGaugeSensor
+Private StaffLevel As CGaugeSensor
+Private StaffStage As CGaugeSensor
+Private StaffTag As CTagGaugeSensor
+Private StaffComment As CTagGaugeSensor
+Private StaffTimestamp As CTimeGaugeSensor
 
 Public Const FlowName As String = "Flow"
 Public Const LevelName As String = "Level"
@@ -23,6 +28,7 @@ Public Const RainName As String = "Precipitation (to 0600)"
 Public Const ATempName As String = "Air Temperature"
 Public Const WTempName As String = "Water Temperature"
 Public Const BattName As String = "Battery Level"
+Public Const TagName As String = "Recording Conditions"
 
 public const flowCount as integer = 12
 public const dailyCount as integer = 17
@@ -105,8 +111,8 @@ Sub InitializeGauges()
 	Set Rain24H = New CGaugeSensor
 	Rain24H.CGaugeSensor Rain24HName, "K", 2, 123967, "00:00:00.000-05:00", , "23:59:59.000-05:00", True
 
-	Set Rain = New CGaugeSensor
-	Rain.CGaugeSensor RainName, "L", 6, 127937, "<InDate>:00:00.000-05:00", 6, "<InDate>:00:00.000-05:00", , True
+	Set Rain = New CSumGaugeSensor
+	Rain.CSumGaugeSensor RainName, "L", 6, 127937, "<InDate>:00:00.000-05:00", 6, "<InDate>:00:00.000-05:00"
 
 	Set ATemp = New CGaugeSensor
 	ATemp.CGaugeSensor ATempName, "K", 5, 124035
@@ -116,6 +122,21 @@ Sub InitializeGauges()
 
 	Set Batt = New CGaugeSensor
 	Batt.CGaugeSensor BattName, "N", 7, 291931
+
+	Set StaffLevel = New CGaugeSensor
+	StaffLevel.CGaugeSensor LevelName, "E", 8, 574563, "", 0, ""', ReturnFields:="Timestamp,Value,Data%20Comment"
+
+	Set StaffStage = New CGaugeSensor
+	StaffStage.Clone StaffLevel, "D"
+
+	Set StaffTag = New CTagGaugeSensor
+	StaffTag.CTagGaugeSensor TagName, "K", 9, 574655, "", 0, ""
+
+	Set StaffComment = New CTagGaugeSensor
+	StaffComment.Clone StaffTag, "L"
+
+	Set StaffTimestamp = New CTimeGaugeSensor
+	StaffTimestamp.Clone StaffLevel, "B"
 
 
 	Dim i As Integer
@@ -255,85 +276,112 @@ Sub InitializeGauges()
 
 
 	i = 0
-	WeeklyGauges(i).CGauge Name:="Shabomeka Lake (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Shabomeka Lake", "Shabomeka Lake (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Mazinaw Lake (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Mazinaw Lake", "Mazinaw Lake (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Little Marble Lake (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Little Marble Lake", "Little Marble Lake (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Mississagagon Lake (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Mississagagon Lake", "Mississagagon Lake (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Kashwakamak Lake (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Kashwakamak Lake Gauge", "Kashwakamak Lake (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Farm Lake (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Mississippi River at outlet Farm Lake", "Farm Lake (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Ardoch Bridge (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Mississippi River at Ardoch Bridge", "Ardoch Bridge (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Malcolm Lake (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Malcolm Lake", "Malcolm Lake (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Pine Lake (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Pine Lake", "Pine Lake (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Big Gull Lake (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Big Gull Lake", "Big Gull Lake (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Buckshot Lake (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Buckshot Lake", "Buckshot Lake (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Crotch Lake (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Crotch Lake GOES", "Crotch Lake (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="High Falls G.S. (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Mississippi River at High Falls", "High Falls G.S. (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Mosque Lake (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Mosque Lake", "Mosque Lake (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Summit Lake (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Summit Lake", "Summit Lake (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Palmerston Lake (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Palmerston Lake", "Palmerston Lake (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Canonto Lake (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Canonto Lake", "Canonto Lake (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Bennett Lake (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Fall River at outlet Bennett Lake", "Bennett Lake (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Dalhousie Lake (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Mississippi River at outlet Dalhousie Lake", "Dalhousie Lake (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Silver Lake (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Silver Lake", "Silver Lake (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Sharbot Lake (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Fall River at outlet Sharbot Lake", "Sharbot Lake (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Widow Lake (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Widow Lake", "Widow Lake (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Lanark Bridge (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Lanark", "Lanark Bridge (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Lanark Dam (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Lanark Dam", "Lanark Dam (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Almonte Bridge (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Mississippi River at Almonte Bridge", "Almonte Bridge (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="Clayton Lake (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Clayton Lake", "Clayton Lake (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 
-	WeeklyGauges(i).CGauge Name:="C.P. Dam (weekly)"
+	WeeklyGauges(i).CGauge "Gauge - Carleton Place Dam", "C.P. Dam (weekly)"
+	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
 	i = i + 1
 End Sub
 
