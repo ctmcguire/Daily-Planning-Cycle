@@ -26,7 +26,7 @@ Sub CreateSheet(SheetName As String, InputDate As Date)
 		.Sheets(SheetName).Range("A3").Formula = ThisWorkbook.Sheets("Raw2").Range("A3:P200").Formula
 
 		Dim btn As Button
-		Call DebugLogging.PrintMsg("Cells copied.  Adding WebUpdate button (you may want to remove this next part if you don't use the WebUpdate Macro)...")
+		Call DebugLogging.PrintMsg("Cells copied.  Adding WebUpdate button")
 
 		'-----------------------------------------------------------------------------------------------------------------------------'
 		'The dashboard buttons are inserted into the new sheet and formatted.
@@ -40,7 +40,7 @@ Sub CreateSheet(SheetName As String, InputDate As Date)
 			.Placement = Excel.XlPlacement.xlFreeFloating
 		End With
 
-		Call DebugLogging.PrintMsg("WebUpdate button added (you may want to remove the previous part if you don't use the WebUpdate Macro)")
+		Call DebugLogging.PrintMsg("WebUpdate button added")
 		Call DebugLogging.PrintMsg("Adding PrintDPC button...")
 
 		Set btn = .Sheets(SheetName).Buttons.Add(200, 5, 90, 25)
@@ -51,18 +51,6 @@ Sub CreateSheet(SheetName As String, InputDate As Date)
 			.Placement = Excel.XlPlacement.xlFreeFloating
 		End With
 
-		Call DebugLogging.PrintMsg("PrintDPC button added.  Updating TimeStamp Values...")
-
-		'-----------------------------------------------------------------------------------------------------------------------------'
-		'The date is loaded into cell B6 on the new sheet and cell formulas in the sheet populate the remaining dates.
-		Range("B" & flowStart).Value = InputDate
-		Range("C" & flowStart & ":C" & flowStart+flowCount & ", C" & dailyStart & ":C" & dailyStart+dailyCount).Value = TimeValue(InputDate)
-
-		dim cell
-		for each cell in unsetDate
-			.Sheets(SheetName).Range(cell).Value = .Sheets("Raw2").Range(cell).Value
-		next cell
-
-		Call DebugLogging.PrintMsg("Finished updating timestamp values")
+		Call DebugLogging.PrintMsg("PrintDPC button added.  ")
 	End With
 End Sub

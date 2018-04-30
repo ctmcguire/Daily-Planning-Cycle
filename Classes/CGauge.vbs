@@ -89,15 +89,39 @@ Public Function Remove(Name As String)
 	pSensors.Remove(Name)
 End Function
 
+Private Function OverWrite(SheetName As String, Row As Integer, Col As String)
+	OverWrite = True
+	With ThisWorkbook.Sheets(SheetName)
+		If IsEmpty(.Cells(Row, Col)) Then _
+			Exit Function
+		OverWrite = .Cells(Row, Col) < CDate(SheetName)
+	End With
+End Function
+
 Public Sub LoadData(SheetName As String, Row As Integer, Optional IsAuto As Boolean = False)
 	If Not pInitialized Then _
 		Exit Sub
+	If pSensors.Count < 1 Then _
+		Exit Sub
+	Dim updateRow As Boolean
+	Dim keys As Collection
+	Dim temp As Collection
+	Set keys = new Collection
+	Set temp = new Collection
 	With ThisWorkbook.Sheets(SheetName)
 		If pID = "N/A" Then _
 			Exit Sub
+		updateRow = OverWrite(SheetName, Row, "B")
 		For Each Sensor In pSensors
-			If IsEmpty(.Cells(Row, Sensor.Column)) Then _
+			keys.Add Sensor.Name, Sensor.Name 'Need the keys later
+			temp.Add .Cells(Row, Sensor.Column).Value, Sensor.Name 'Need to track old values in case we need to revert back
+			If updateRow or IsEmpty(.Cells(Row, Sensor.Column)) Then _
 				.Cells(Row, Sensor.Column).Value = Sensor.Value(pID, IsAuto)
+		Next
+		If .Cells(Row, "B") < DateValue(SheetName) + 1 Then _
+			Exit Sub 'If the value is not after the sheet's date, then stop here
+		For Each k in keys
+			.Cells(Row, pSensors.item(k).Column).Value = temp.item(k)
 		Next
 	End With
 End Sub

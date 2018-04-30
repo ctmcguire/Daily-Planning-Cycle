@@ -169,5 +169,6 @@ End Function
 Private Function GetData(ID As String, Range As String)
 	Dim Raw As String
 	Raw = Application.WorksheetFunction.Index(ThisWorkbook.Sheets("Raw1").Range(GetRange(0)), (Application.WorksheetFunction.Match(ID, ThisWorkbook.Sheets("Raw1").Range(Range), 0) + 5))
-	GetData = DateValue(Replace(Raw, "T", " ")) + TimeValue(Replace(Raw, "T", " "))
+	If Raw <> "" Then _
+		GetData = DateValue(Replace(Raw, "T", " ")) + TimeValue(Replace(Raw, "T", " "))
 End Function
