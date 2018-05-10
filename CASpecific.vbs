@@ -132,13 +132,13 @@ Sub InitializeGauges()
 	Batt.CGaugeSensor BattName, "N", 7, 291931
 
 	Set StaffLevel = New CGaugeSensor
-	StaffLevel.CGaugeSensor LevelName, "E", 8, 574563, "", 0, ""
+	StaffLevel.CGaugeSensor LevelName, "E", 8, 574563, "<prev>", 0, "<prev>"
 
 	Set StaffStage = New CGaugeSensor
 	StaffStage.Clone StaffLevel, "D"
 
 	Set StaffTag = New CTagGaugeSensor
-	StaffTag.CTagGaugeSensor TagName, "K", 9, 574655, "", 0, ""
+	StaffTag.CTagGaugeSensor TagName, "K", 9, 574655, "<prev>", 0, "<prev>"
 
 	Set StaffComment = New CTagGaugeSensor
 	StaffComment.Clone StaffTag, "L"

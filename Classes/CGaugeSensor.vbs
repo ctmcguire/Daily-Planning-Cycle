@@ -21,6 +21,8 @@ Private pLoadedKiWIS As Boolean
 
 Private pReturnFields As String
 
+Private PrevVal As String
+
 
 Public Sub Class_Initialize()
 	pInitialized = False
@@ -111,10 +113,11 @@ Public Property Get RangeIndex()
 	RangeIndex = pRangeIndex
 End Property
 
-Private Function FromTo(InDate As Date)
+Private Function FromTo(InDate As Date, Row As Integer)
 	Dim FrVal As String
 	Dim ToVal As String
 	Dim DateVal As String
+	Dim TempVal As String
 
 	If Not pInitialized Then _
 		Exit Function
@@ -122,15 +125,42 @@ Private Function FromTo(InDate As Date)
 	ToVal = ""
 
 	DateVal = Format(InDate - Switch(pIsPrev, 1, True, 0), "yyyy-mm-dd") 'Switch(cond1,value1,...) returns the first value corresponding to a condition that evaluates to true
-	If Not pStartTime = "" Then _
+	If Not pStartTime = "" Then
 		FrVal = "&from=" & DateVal & "T" & Replace(pStartTime, "<InDate>", Hour(InDate)-pStartOffset)
-	If Not pEndTime = "" Then _
+		If pStartTime = "<prev>" Then
+			On Error Resume Next
+			Call DebugLogging.PrintMsg("Getting last staff date from " & ThisWorkbook.Sheets(Format(InDate - 1, "mmm d")).name)
+			If Err.Number <> 0 Then
+				Call DebugLogging.Erred
+				FromTo = ""
+				Exit Function
+			End If
+			On Error Goto 0
+			TempVal = Format(ThisWorkbook.Sheets(Format(InDate - 1, "mmm d")).Cells(Row, "B"), "yyyy-mm-dd HH:MM:SS")
+			If PrevVal = "" Then _
+				PrevVal = TempVal
+			if CDate(TempVal) < CDate(PrevVal) Then _
+				PrevVal = TempVal
+			If PrevVal = "" Then
+				FromTo = ""
+				Exit Function
+			End If
+			FrVal = "&from=" & Replace(PrevVal, " ", "T") & ".000-05:00" & "&valueorder=desc"
+		End If
+	End If
+	If Not pEndTime = "" Then
 		ToVal = "&to=" & DateVal & "T" & Replace(pEndTime, "<InDate>", Hour(InDate))
+		If pEndTime = "<prev>" Then
+			ToVal = "&to=" & DateVal & "T" & Hour(InDate) & ":00:00.000-05:00"
+			If SheetName = Format(InDate, "mmm d") Then _
+				ToVal = "&to=" & DateVal & "T23:59:59.000-05:00"
+		End If
+	End If
 
 	FromTo = FrVal & ToVal
 End Function
 
-Private Function UrlKiWIS()
+Private Function UrlKiWIS(Row As Integer)
 	Dim BaseUrl As String
 	Dim ReturnFields As String
 
@@ -140,14 +170,18 @@ Private Function UrlKiWIS()
 	BaseUrl = "http://waterdata.quinteconservation.ca/KiWIS/KiWIS?service=kisters&type=queryServices&request=getTimeseriesValues&datasource=0&format=html&metadata=true&md_returnfields=station_name,parametertype_name&dateformat=yyyy-MM-dd%27T%27HH:mm:ss&timeseriesgroup_id="
 	ReturnFields = "&returnfields=" & pReturnFields
 
-	UrlKiWIS = BaseURL & pTsId & FromTo(SheetDay)
+	UrlKiWIS = BaseURL & pTsId & FromTo(SheetDay, Row)
 End Function
 
-Private Function LoadKiWIS(Optional IsAuto As Boolean = False)
+Private Function LoadKiWIS(Row As Integer, Optional IsAuto As Boolean = False)
+	Dim Url As String
 	LoadKiWIS = True
 
 	With ThisWorkbook.Sheets("Raw1").QueryTables("ExternalData_" & pRangeIndex)
-		.Connection = "URL;" & UrlKiWIS()
+		Url = "URL;" & UrlKiWIS(Row)
+		If pLoadedKiWIS And .Connection = Url Then _
+			Exit Function
+		.Connection = Url
 		On Error Resume Next
 		.Refresh(False)
 		If Err.Number <> 0 Then
@@ -156,31 +190,24 @@ Private Function LoadKiWIS(Optional IsAuto As Boolean = False)
 			LoadKiWIS = False
 			Exit Function
 		End If
+		pLoadedKiWIS = True
 	End With
 End Function
 
-Public Function Value(ID As String, Optional IsAuto As Boolean = False)
+Public Function Value(ID As String, Row As Integer, Optional IsAuto As Boolean = False)
 	Dim Range As String
 
 	If Not pInitialized Then _
 		Exit Function
 	If IsClone Then
-		Value = pOriginal.Value(ID)
+		Value = pOriginal.Value(ID, Row, IsAuto)
 		Exit Function
 	End If
 
-	If Not pLoadedKiWIS Then
-		If Not LoadKiWIS(IsAuto) Then _
-			Exit Function
-		pLoadedKiWIS = True
-	End If
+	If Not LoadKiWIS(Row, IsAuto) Then _
+		Exit Function
 
 	Range = GetRange()
-
-'	If pIsSum Then
-'		Value = Sum(ID, Range)
-'		Exit Function
-'	End If
 	Value = GetData(ID, Range)
 End Function
 
@@ -209,26 +236,4 @@ End Function
 
 Private Function GetData(ID As String, Range As String)
 	GetData = Application.WorksheetFunction.Index(ThisWorkbook.Sheets("Raw1").Range(Range), (Application.WorksheetFunction.Match(ID, ThisWorkbook.Sheets("Raw1").Range(Range), 0) + 5))
-End Function
-
-Private Function Sum(ID As String, Range As String)
-	Dim Column As String
-	Dim i As Integer
-	For i = 1 To Len(Range)
-		Column = Left(Range, i)
-		If 0 < Val(Column) Then _
-			Exit For
-		Column = Left(Range, 1)
-	Next i
-	
-	With ThisWorkbook.Sheets("Raw1")
-		If Not (.Range(Column & (Application.WorksheetFunction.Match(ID, .Range(Range), 0) + 3))) = 7 Then
-			Sum = ""
-			Exit Function
-		End If
-
-		Dim Row As Integer
-		Row = Application.WorksheetFunction.Match(ID, .Range(Range), 0) + 6
-		Sum = Application.WorksheetFunction.Sum(.Range(Column & Row, Column & Row+12))
-	End With
 End Function
