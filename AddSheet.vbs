@@ -52,5 +52,8 @@ Sub CreateSheet(SheetName As String, InputDate As Date)
 		End With
 
 		Call DebugLogging.PrintMsg("PrintDPC button added.  ")
+		Call DebugLogging.PrintMsg("Updating Sheet Timestamp...")
+
+		Range("F1").Value = InputDate
 	End With
 End Sub
