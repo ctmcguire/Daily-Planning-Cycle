@@ -118,7 +118,7 @@ Public Sub LoadData(SheetName As String, Row As Integer, Optional IsAuto As Bool
 			If updateRow or IsEmpty(.Cells(Row, Sensor.Column)) Then _
 				.Cells(Row, Sensor.Column).Value = Sensor.Value(pID, Row, IsAuto)
 		Next
-		If .Cells(Row, "B") < DateValue(SheetName) + 1 Then _
+		If .Cells(Row, "B") < DateValue(SheetName) + 1 And .Cells(Row, "B") <> "" Then _
 			Exit Sub 'If the value is not after the sheet's date, then stop here
 		For Each k in keys
 			.Cells(Row, pSensors.item(k).Column).Value = temp.item(k)
