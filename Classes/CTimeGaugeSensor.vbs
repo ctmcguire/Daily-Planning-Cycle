@@ -87,11 +87,16 @@ Private Function FromTo(InDate As Date, Row As Integer)
 			On Error Resume Next
 			Call DebugLogging.PrintMsg("Getting last staff date from " & ThisWorkbook.Sheets(Format(InDate - 1, "mmm d")).name)
 			If Err.Number <> 0 Then
+				Call DebugLogging.Erred
 				FromTo = ""
 				Exit Function
 			End If
 			On Error Goto 0
 			TempVal = Format(ThisWorkbook.Sheets(Format(InDate - 1, "mmm d")).Cells(Row, "B"), "yyyy-mm-dd HH:MM:SS")
+			If TempVal = "" Then
+				FromTo = ""
+				Exit Function
+			End If
 			If PrevVal = "" Then _
 				PrevVal = TempVal
 			if CDate(TempVal) < CDate(PrevVal) Then _

@@ -137,6 +137,10 @@ Private Function FromTo(InDate As Date, Row As Integer)
 			End If
 			On Error Goto 0
 			TempVal = Format(ThisWorkbook.Sheets(Format(InDate - 1, "mmm d")).Cells(Row, "B"), "yyyy-mm-dd HH:MM:SS")
+			If TempVal = "" Then
+				FromTo = ""
+				Exit Function
+			End If
 			If PrevVal = "" Then _
 				PrevVal = TempVal
 			if CDate(TempVal) < CDate(PrevVal) Then _
