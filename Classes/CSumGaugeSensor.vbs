@@ -231,7 +231,12 @@ Private Function GetData(ID As String, Range As String)
 		End If
 
 		Dim Row As Integer
+		On Error Goto Erred
 		Row = Application.WorksheetFunction.Match(ID, .Range(Range), 0) + 6
 		GetData = Application.WorksheetFunction.Sum(.Range(Column & Row, Column & Row+12))
 	End With
+	Exit Function
+	Erred:
+	Call DebugLogging.Erred
+	GetData = ""
 End Function

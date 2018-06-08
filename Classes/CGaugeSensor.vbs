@@ -136,7 +136,7 @@ Private Function FromTo(InDate As Date, Row As Integer)
 				Exit Function
 			End If
 			On Error Goto 0
-			TempVal = Format(ThisWorkbook.Sheets(Format(InDate - 1, "mmm d")).Cells(Row, "B"), "yyyy-mm-dd HH:MM:SS")
+			TempVal = Format(Evaluate("=MIN('" & Format(InDate - 1, "mmm d") & "'!B" & weeklyStart & ":B" & (weeklyStart + weeklyCount) & ")"), "yyyy-mm-dd HH:MM:SS")
 			If TempVal = "" Then
 				FromTo = ""
 				Exit Function
@@ -208,8 +208,10 @@ Public Function Value(ID As String, Row As Integer, Optional IsAuto As Boolean =
 		Exit Function
 	End If
 
-	If Not LoadKiWIS(Row, IsAuto) Then _
-		Exit Function
+	If Not pLoadedKiWIS Then
+		If Not LoadKiWIS(Row, IsAuto) Then _
+			Exit Function
+	End If
 
 	Range = GetRange()
 	Value = GetData(ID, Range)
@@ -239,5 +241,10 @@ Private Function GetRange()
 End Function
 
 Private Function GetData(ID As String, Range As String)
+	On Error Goto Erred
 	GetData = Application.WorksheetFunction.Index(ThisWorkbook.Sheets("Raw1").Range(Range), (Application.WorksheetFunction.Match(ID, ThisWorkbook.Sheets("Raw1").Range(Range), 0) + 5))
+	Exit Function
+	Erred:
+	Call DebugLogging.Erred
+	GetData = ""
 End Function
