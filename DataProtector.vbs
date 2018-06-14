@@ -106,6 +106,10 @@ Function SaveNextYear()
 			Dim mnth
 			With DPCsheet
 				Dim ShNm As String
+				If .name = Year(DateAdd("yyyy",-1,Now)) & " Dec 31" Then _
+					.name = "Dec 31 " & Year(DateAdd("yyyy",-1,Now))
+				If .name = "Dec 31" Then _
+					.name = Year(Now) & " Dec 31"
 				ShNm = GetMnth(.name)
 				For Each mnth In Array("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","")
 					If ShNm = "" & mnth Then _
