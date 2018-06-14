@@ -232,6 +232,8 @@ Public Function TagValue(ID As String, Row As Integer, Optional IsAuto As Boolea
 		TagValue = "I"
 	if InStr(dat, "[R] Rust") <> 0 Then _
 		TagValue = "R"
+	if InStr(dat, "[E] Estimate") <> 0 Then _
+		TagValue = "E"
 End Function
 Public Function CmtValue(ID As String, Row As Integer, Optional IsAuto As Boolean = False)
 	CmtValue = ""
@@ -263,6 +265,8 @@ Public Function CmtValue(ID As String, Row As Integer, Optional IsAuto As Boolea
 		tag = InStr(dat, "[I] Ice")
 	if tag = 0 Then _
 		tag = InStr(dat, "[R] Rust")
+	if tag = 0 Then _
+		tag = InStr(dat, "[E] Estimate")
 	CmtValue = Mid(dat, 1, InStr(dat, ";")-1)
 	if tag < InStr(dat, ";") Then _
 		CmtValue = Mid(dat, InStr(dat, ";") + 1)
