@@ -13,7 +13,7 @@ Private FlowTimestamp As CTimeGaugeSensor
 Private Level As CGaugeSensor
 Private LevelTimestamp As CTimeGaugeSensor
 Private Rain24H As CGaugeSensor
-Private Rain As CSumGaugeSensor
+Private Rain As CGaugeSensor
 Private ATemp As CGaugeSensor
 Private WTemp As CGaugeSensor
 Private Batt As CGaugeSensor
@@ -119,8 +119,8 @@ Sub InitializeGauges()
 	Set Rain24H = New CGaugeSensor
 	Rain24H.CGaugeSensor Rain24HName, "K", 2, 123967, "00:00:00.000-05:00", , "23:59:59.000-05:00", True
 
-	Set Rain = New CSumGaugeSensor
-	Rain.CSumGaugeSensor RainName, "L", 6, 127937, "<InDate>:00:00.000-05:00", 6, "<InDate>:00:00.000-05:00"
+	Set Rain = New CGaugeSensor
+	Rain.CGaugeSensor RainName, "L", 6, 127937
 
 	Set ATemp = New CGaugeSensor
 	ATemp.CGaugeSensor ATempName, "K", 5, 124035
@@ -156,6 +156,7 @@ Sub InitializeGauges()
 	Next i
 	For i = 0 To weeklyCount
 		Set WeeklyGauges(i) = New CGauge
+		WeeklyGauges(i).OverwriteBlanks
 	Next i
 
 
