@@ -1,6 +1,7 @@
 'CGauge Class
 Private pName As String 'Gauge name as it appears in the SQL database
 Private pID As String 'Gauge name as it appears in the KiWIS data
+Private pOverwrite As Boolean
 Private pSensors As Collection 'Collection of Sensors.
 
 Private pInitialized As Boolean 'Boolean value to prevent the CGauge function from being called twice on any given CGauge function
@@ -8,6 +9,7 @@ Private pInitialized As Boolean 'Boolean value to prevent the CGauge function fr
 
 Public Sub Class_Initialize()
 	pInitialized = False
+	pOverwrite = False
 End Sub
 
 '/**
@@ -54,6 +56,10 @@ Public Property Get ID() As String
 		Exit Function
 	ID = pID
 End Property
+
+Public Function OverwriteBlanks(Optional Val As Boolean = True)
+	pOverwrite = Val
+End Function
 
 '/**
 ' * The Add Function is used to add new CGaugeSensor objects to this CGauge's pSensors property.  The Sensor's
@@ -115,10 +121,10 @@ Public Sub LoadData(SheetName As String, Row As Integer, Optional IsAuto As Bool
 		For Each Sensor In pSensors
 			keys.Add Sensor.Name, Sensor.Name 'Need the keys later
 			temp.Add .Cells(Row, Sensor.Column).Value, Sensor.Name 'Need to track old values in case we need to revert back
-			If updateRow or IsEmpty(.Cells(Row, Sensor.Column)) Then _
+			If (updateRow And pOverwrite) or IsEmpty(.Cells(Row, Sensor.Column)) Then _
 				.Cells(Row, Sensor.Column).Value = Sensor.Value(pID, Row, IsAuto)
 		Next
-		If .Cells(Row, "B") < DateValue(SheetName) + 1 And .Cells(Row, "B") <> "" Then _
+		If (.Cells(Row, "B") < DateValue(SheetName) + 1 And .Cells(Row, "B") <> "") Or Not pOverwrite Then _
 			Exit Sub 'If the value is not after the sheet's date, then stop here
 		For Each k in keys
 			.Cells(Row, pSensors.item(k).Column).Value = temp.item(k)
