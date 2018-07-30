@@ -23,7 +23,6 @@ Private pReturnFields As String
 
 Private PrevVal As String
 
-
 Public Sub Class_Initialize()
 	pInitialized = False
 	pIsClone = False
@@ -175,6 +174,37 @@ Private Function UrlKiWIS(Row As Integer)
 	ReturnFields = "&returnfields=" & pReturnFields
 
 	UrlKiWIS = BaseURL & pTsId & FromTo(SheetDay, Row)
+End Function
+
+Private Function LoadKiWISAsync(Row As Integer, Optional IsAuto As Boolean = False)
+	Dim Url As String
+	Dim strt As Date
+	LoadKiWISAsync = True
+	strt = Now()
+
+	With ThisWorkbook.Sheets("Raw1").QueryTables("ExternalData_" & pRangeIndex)
+		Url = "URL;" & UrlKiWIS(Row)
+		If pLoadedKiWIS And .Connection = Url Then _
+			Exit Function
+		.Connection = Url
+		On Error Resume Next
+		.Refresh(True)
+		If Err.Number <> 0 Then
+			DebugLogging.Erred
+			On Error Goto 0
+			LoadKiWISAsync = False
+			Exit Function
+		End If
+		While(Now() - strt < TimeSerial(0,0,10) And .Refreshing)
+			Call DebugLogging.PrintMsg("Waiting for KiWIS response...")
+		Wend
+		If .Refreshing Then
+			.CancelRefresh
+			Call DebugLogging.PrintMsg("Response timed out")
+		End If
+		Call DebugLogging.PrintMsg("Loading and Copying data from KiWIS")
+		pLoadedKiWIS = True
+	End With
 End Function
 
 Private Function LoadKiWIS(Row As Integer, Optional IsAuto As Boolean = False)
