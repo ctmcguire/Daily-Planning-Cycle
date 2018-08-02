@@ -1,7 +1,6 @@
 'CGaugeSensor Class
 'Implements IGaugeSensor
 
-Private pName As String 'What value the gauge sensor measures (flow, level, precipitation, etc)
 Private pColumn As String 'Column where this sensor's data will appear in the table
 Private pRangeIndex As Integer 'Column where this sensor's data is retrieved from in raw1
 Private pTsId As String
@@ -11,7 +10,6 @@ Private pEndTime As String
 Private pStartOffset As Integer
 
 Private pIsPrev As Boolean
-Private pIsSum As Boolean 'Whether or not this Sensor is a summation of values
 
 Private pOriginal As CGaugeSensor
 Private pIsClone As Boolean
@@ -23,10 +21,15 @@ Private pReturnFields As String
 
 Private PrevVal As String
 
+Private pSqlCol As String
+Private pSqlUpdate As Boolean
+
+
 Public Sub Class_Initialize()
 	pInitialized = False
 	pIsClone = False
 	pLoadedKiWIS = False
+	pSqlCol = ""
 End Sub
 
 '/**
@@ -51,13 +54,21 @@ End Sub
 ' * 				Sensor.CGaugeSensor "Flow Rate", "E", 3, 124004
 ' * The above example initializes the CGaugeSensor Sensor with a Name of "Flow Rate", sets its column to "E", sets its range index to 3 (for ExternalData_3), and sets its timeseries group id to 124004.
 '**/
-Public Sub CGaugeSensor(Name As String, Column As String, RangeIndex As Integer, TsId As String, _
+Public Function Init(Column As String, RangeIndex As Integer, TsId As String, _
 						Optional StartTime As String = "<InDate>:59:55.000-05:00", Optional StartOffset As Integer = 1, _
 						Optional EndTime As String = "<InDate>:00:05.000-05:00", _
-						Optional IsPrev = False, Optional IsSum = False, Optional ReturnFields = "Timestamp,Value")
+						Optional IsPrev = False, Optional ReturnFields = "Timestamp,Value") As CGaugeSensor
+	Dim temp As New CGaugeSensor
+	Set Init = temp.CGaugeSensor(Column, RangeIndex, TsId, StartTime, StartOffset, EndTime, IsPrev, ReturnFields)
+End Function
+Public Function CGaugeSensor(Column As String, RangeIndex As Integer, TsId As String, _
+						Optional StartTime As String = "<InDate>:59:55.000-05:00", Optional StartOffset As Integer = 1, _
+						Optional EndTime As String = "<InDate>:00:05.000-05:00", _
+						Optional IsPrev = False, Optional ReturnFields = "Timestamp,Value") As CGaugeSensor
+	Set CGaugeSensor = Me
+
 	If pInitialized Then _
-		Exit Sub
-	pName = Name
+		Exit Function
 	pColumn = Column
 	pRangeIndex = RangeIndex'Need to strip off "'Raw1'!" and the $'s
 	pTsId = TsId
@@ -67,22 +78,27 @@ Public Sub CGaugeSensor(Name As String, Column As String, RangeIndex As Integer,
 	pStartOffset = StartOffset
 
 	pIsPrev = IsPrev
-	pIsSum = IsSum
 
 	pReturnFields = ReturnFields
 
 	pInitialized = True
-End Sub
+End Function
 
-Public Sub Clone(Original As CGaugeSensor, Optional Column As String = "")
+Public Function InitClone(Original As CGaugeSensor, Optional Column As String = "") As CGaugeSensor
+	Dim temp As New CGaugeSensor
+	Set InitClone = temp.Clone(Original, Column)
+End Function
+Public Function Clone(Original As CGaugeSensor, Optional Column As String = "") As CGaugeSensor
+	Set Clone = Me
+
 	If pInitialized Then _
-		Exit Sub
+		Exit Function
 	Set pOriginal = Original
 	pColumn = Column
 	pIsClone = True
 	
 	pInitialized = True
-End Sub
+End Function
 
 Public Property Get IsClone()
 	IsClone = pIsClone
@@ -94,14 +110,6 @@ Public Property Get Column()
 		Exit Function
 	End If
 	Column = pColumn
-End Property
-
-Public Property Get Name()
-	If pIsClone Then
-		Name = pOriginal.Name
-		Exit Function
-	End If
-	Name = pName
 End Property
 
 Public Property Get RangeIndex()
@@ -277,4 +285,25 @@ Private Function GetData(ID As String, Range As String)
 	Erred:
 	Call DebugLogging.Erred
 	GetData = ""
+End Function
+
+Public Function GetSql(i As Integer, InputDate As String, ByRef Headers As Collection, ByRef Values As Collection, Optional UpdateOnly As Boolean = False)
+	If pSqlCol = "" Then _
+		Exit Function
+	If UpdateOnly And Not(pSqlUpdate) Then _
+		Exit Function
+	With ThisWorkbook
+		Dim Val As String
+		Val = "NULL"
+		If Not IsEmpty(.Sheets(InputDate).Range(pColumn & i)) Then _
+			Val = .Sheets(InputDate).Range(pColumn & i)
+		Headers.Add pSqlCol, pSqlCol
+		Values.Add Val, pSqlCol
+	End With
+End Function
+
+Public Function SqlCol(col As String, Optional update As Boolean = True) As CGaugeSensor
+	Set SqlCol = Me
+	pSqlCol = col
+	pSqlUpdate = update
 End Function

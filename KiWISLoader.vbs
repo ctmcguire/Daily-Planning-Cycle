@@ -21,23 +21,26 @@ Sub KiWIS_Import(SheetName As String, InputDate As Date, Optional IsAuto As Bool
 
 	'The With statement is used to ensure the macro does not modify other workbooks that may be open.
 	With ThisWorkbook
-		'The 'i' counter navigates the GaugeName array.
-		For i = 0 To UBound(FlowGauges)
-			'This for loop moves the Water Surveys of Canada (WSC) data from Raw1 to the loaded sheet.
-			'The WSC sites measure the level, flow and precipitation.
-			FlowGauges(i).LoadData SheetName, i+flowStart, IsAuto
-		Next i
+		For i = 0 To Tables.count() - 1
+			Tables(i).LoadData SheetName, IsAuto
+		Next
+		''The 'i' counter navigates the GaugeName array.
+		'For i = 0 To UBound(FlowGauges)
+		'	'This for loop moves the Water Surveys of Canada (WSC) data from Raw1 to the loaded sheet.
+		'	'The WSC sites measure the level, flow and precipitation.
+		'	FlowGauges(i).LoadData SheetName, i+flowStart, IsAuto
+		'Next i
 
-		'After the WSC Stream Gauge data is loaded the MVCA Lake data is loaded.
-		For i = 0 To UBound(DailyGauges)
-			DailyGauges(i).LoadData SheetName, i+dailyStart, IsAuto
-		Next i
+		''After the WSC Stream Gauge data is loaded the MVCA Lake data is loaded.
+		'For i = 0 To UBound(DailyGauges)
+		'	DailyGauges(i).LoadData SheetName, i+dailyStart, IsAuto
+		'Next i
 
-		'After MVCA Daily Lake data is loaded, the Weekly Lake data is loaded*
-		' *Currently No weekly gauges have Sensors to get data from, but this could conceivably change in the future
-		For i = 0 To UBound(WeeklyGauges)
-			WeeklyGauges(i).LoadData SheetName, i+weeklyStart, IsAuto
-		Next i
+		''After MVCA Daily Lake data is loaded, the Weekly Lake data is loaded*
+		'' *Currently No weekly gauges have Sensors to get data from, but this could conceivably change in the future
+		'For i = 0 To UBound(WeeklyGauges)
+		'	WeeklyGauges(i).LoadData SheetName, i+weeklyStart, IsAuto
+		'Next i
 	End With
 
 	Call DebugLogging.PrintMsg("Data loaded and copied into Worksheet.")

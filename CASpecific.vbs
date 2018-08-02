@@ -7,38 +7,15 @@ Option Explicit
 
 Public Const SensorCount As Integer = 9
 
-Private Stage As CGaugeSensor
-Private Flow As CGaugeSensor
-Private FlowTimestamp As CTimeGaugeSensor
-Private Level As CGaugeSensor
-Private LevelTimestamp As CTimeGaugeSensor
-Private Rain24H As CGaugeSensor
-Private Rain As CGaugeSensor
-Private ATemp As CGaugeSensor
-Private WTemp As CGaugeSensor
-Private Batt As CGaugeSensor
-Private StaffLevel As CGaugeSensor
-Private StaffStage As CGaugeSensor
-Private StaffTag As CTagGaugeSensor
-Private StaffComment As CTagGaugeSensor
-Private StaffTimestamp As CTimeGaugeSensor
-
-Public Const FlowName As String = "Flow"
-Public Const LevelName As String = "Level"
-Public Const Rain24HName As String = "Precipitation (last 24 hours)"
-Public Const RainName As String = "Precipitation (to 0600)"
-Public Const ATempName As String = "Air Temperature"
-Public Const WTempName As String = "Water Temperature"
-Public Const BattName As String = "Battery Level"
-Public Const TagName As String = "Recording Conditions"
-
 public const flowCount as integer = 12
 public const dailyCount as integer = 17
 public const weeklyCount as integer = 26
 
-Public FlowGauges(flowCount) As CGauge
+'Public FlowGauges(flowCount) As CGauge
 Public DailyGauges(dailyCount) As CGauge
 Public WeeklyGauges(weeklyCount) As CGauge
+
+Public Tables As CTableList
 
 Public Const FlowOffset As Integer = 6 'Set this to the first row that gets KiWIS data
 Public Const FlowToDailyGap As Integer = 5 'Set this to one more than the number of rows between the last flow gauge and first daily lake gauge
@@ -54,6 +31,29 @@ Public Const BackupFolder As String = "\\APP-SERVER\Data_drive\common_folder\Wat
 
 Public Const Recipients As String = "cmcguire@mvc.on.ca; gmountenay@mvc.on.ca; jnorth@mvc.on.ca; abroadbent@mvc.on.ca; jprice@mvc.on.ca; plehman@mvc.on.ca"
 
+Private Function InitializeSensors() As Collection
+	Dim fVals As New CGaugeSensor 'CGaugeSensor factory
+	Dim fTime As New CTimeGaugeSensor 'CTimeGaugeSensor factory
+	Dim fRmrk As New CTagGaugeSensor 'CTagGaugeSensor factory
+	Dim temp As New Collection
+
+	temp.Add fVals.Init("E", 3, 124004).SqlCol("datainfo"), "Flow"
+	temp.Add fTime.InitClone(temp("Flow"), "B"), "FlowTimestamp"
+	temp.Add fVals.Init("E", 1, 91667).SqlCol("datainfo"), "Level"
+	temp.Add fTime.InitClone(temp("Level"), "B"), "LevelTimestamp"
+	temp.Add fVals.InitClone(temp("Level"), "D"), "Stage"
+	temp.Add fVals.Init("K", 2, 123967, "00:00:00.000-05:00", , "23:59:59.000-05:00", True).SqlCol("precipitation"), "Rain24H"
+	temp.Add fVals.Init("L", 6, 127937), "Rain"
+	temp.Add fVals.Init("K", 5, 124035), "ATemp"
+	temp.Add fVals.Init("M", 4, 124025), "WTemp"
+	temp.Add fVals.Init("N", 7, 291931), "Batt"
+	temp.Add fVals.Init("E", 8, 574563, "<prev>", 0, "<prev>").SqlCol("datainfo"), "StaffLevel"
+	temp.Add fRmrk.Init("K", 9, 574655, "<prev>", 0, "<prev>"), "StaffTag"
+	temp.Add fRmrk.InitClone(temp("StaffTag"), "L"), "StaffComment"
+	temp.Add fTime.InitClone(temp("StaffLevel"), "B"), "StaffTimestamp"
+
+	Set InitializeSensors = temp
+End Function
 
 '/**
 ' * The InitializeGauges function is used to initialize the 3 CGauge array constants, and should be called
@@ -101,297 +101,146 @@ Public Const Recipients As String = "cmcguire@mvc.on.ca; gmountenay@mvc.on.ca; j
 ' * 		2.  Set the respective gap variable (FlowToDailyGap/DailyToWeeklyGap/DataToWeatherGap) to 0.
 '**/
 Sub InitializeGauges()
-	Set Flow = New CGaugeSensor
-	Flow.CGaugeSensor FlowName, "E", 3, 124004
-
-	Set FlowTimestamp = new CTimeGaugeSensor
-	FlowTimestamp.Clone Flow, "B"
-
-	Set Level = New CGaugeSensor
-	Level.CGaugeSensor LevelName, "E", 1, 91667
-
-	Set LevelTimestamp = new CTimeGaugeSensor
-	LevelTimestamp.Clone Level, "B"
-
-	Set Stage = New CGaugeSensor
-	Stage.Clone Level, "D"
-
-	Set Rain24H = New CGaugeSensor
-	Rain24H.CGaugeSensor Rain24HName, "K", 2, 123967, "00:00:00.000-05:00", , "23:59:59.000-05:00", True
-
-	Set Rain = New CGaugeSensor
-	Rain.CGaugeSensor RainName, "L", 6, 127937
-
-	Set ATemp = New CGaugeSensor
-	ATemp.CGaugeSensor ATempName, "K", 5, 124035
-
-	Set WTemp = New CGaugeSensor
-	WTemp.CGaugeSensor WTempName, "M", 4, 124025
-
-	Set Batt = New CGaugeSensor
-	Batt.CGaugeSensor BattName, "N", 7, 291931
-
-	Set StaffLevel = New CGaugeSensor
-	StaffLevel.CGaugeSensor LevelName, "E", 8, 574563, "<prev>", 0, "<prev>"
-
-	Set StaffStage = New CGaugeSensor
-	StaffStage.Clone StaffLevel, "D"
-
-	Set StaffTag = New CTagGaugeSensor
-	StaffTag.CTagGaugeSensor TagName, "K", 9, 574655, "<prev>", 0, "<prev>"
-
-	Set StaffComment = New CTagGaugeSensor
-	StaffComment.Clone StaffTag, "L"
-
-	Set StaffTimestamp = New CTimeGaugeSensor
-	StaffTimestamp.Clone StaffLevel, "B"
-
-
-	Dim i As Integer
-	For i = 0 To flowCount
-		Set FlowGauges(i) = New CGauge
-	Next i
-	For i = 0 To dailyCount
-		Set DailyGauges(i) = New CGauge
-	Next i
-	For i = 0 To weeklyCount
-		Set WeeklyGauges(i) = New CGauge
-		WeeklyGauges(i).OverwriteBlanks
-	Next i
-
-
-	i = 0
-	FlowGauges(i).CGauge "Gauge - Mississippi River below Marble Lake", "Myers Cave flow"
-	FlowGauges(i).Add FlowTimestamp, Stage, Flow, Rain24H, Rain, Batt
-	i = i + 1
-
-	FlowGauges(i).CGauge "Gauge - Buckshot Creek near Plevna", "Buckshot Creek flow"
-	FlowGauges(i).Add FlowTimestamp, Stage, Flow, Rain24H, Rain, Batt
-	i = i + 1
-
-	FlowGauges(i).CGauge "Gauge - Mississippi River at Ferguson Falls", "Ferguson Falls flow"
-	FlowGauges(i).Add FlowTimestamp, Stage, Flow, Rain24H, Rain, Batt
-	i = i + 1
-
-	FlowGauges(i).CGauge "Gauge - Mississippi River at Appleton", "Appleton flow"
-	FlowGauges(i).Add FlowTimestamp, Stage, Flow, Rain24H, Rain, Batt
-	i = i + 1
-
-	FlowGauges(i).CGauge "Gauge - Clyde River at Gordon Rapids", "Gordon Rapids flow"
-	FlowGauges(i).Add FlowTimestamp, Stage, Flow, Rain24H, Rain, Batt
-	i = i + 1
-
-	FlowGauges(i).CGauge "Gauge - Clyde River near Lanark", "Lanark stream flow"
-	FlowGauges(i).Add FlowTimestamp, Stage, Flow, Rain24H, Rain, Batt
-	i = i + 1
-
-	FlowGauges(i).CGauge "Gauge - Indian River near Blakeney", "Mill of Kintail flow"
-	FlowGauges(i).Add FlowTimestamp, Stage, Flow, Rain24H, Rain, Batt
-	i = i + 1
-
-	FlowGauges(i).CGauge "Gauge - Carp River near Kinburn", "Kinburn flow"
-	FlowGauges(i).Add FlowTimestamp, Stage, Flow, Rain24H, Rain, Batt
-	i = i + 1
-
-	FlowGauges(i).CGauge "Gauge - Fall River at outlet Bennett Lake", "Bennett Lake outflow"
-	FlowGauges(i).Add FlowTimestamp, Stage, Flow, Rain24H, Rain, Batt
-	i = i + 1
-
-	FlowGauges(i).CGauge "Gauge - Mississippi River at outlet Dalhousie Lake", "Dalhousie Lk outflow"
-	FlowGauges(i).Add FlowTimestamp, Stage, Flow, Rain24H, Rain, Batt
-	i = i + 1
-
-	FlowGauges(i).CGauge "Gauge - Mississippi High Falls", "High Falls Flow"
-	i = i + 1
-
-	FlowGauges(i).CGauge "Gauge - Poole Creek at Maple Grove", "Poole Creek at Maple Grove"
-	FlowGauges(i).Add FlowTimestamp, Stage, Flow, Batt
-	i = i + 1
-
-	FlowGauges(i).CGauge "Gauge - Carp River at Richardson", "Carp River at Richardson"
-	FlowGauges(i).Add FlowTimestamp, Stage, Flow, Batt
-	i = i + 1
-
-
-	i = 0
-	DailyGauges(i).CGauge "Gauge - Shabomeka Lake", "Shabomeka Lake"
-	DailyGauges(i).Add LevelTimestamp, Level, Rain24H, Rain, Batt
-	i = i + 1
-
-	DailyGauges(i).CGauge "Gauge - Mazinaw Lake", "Mazinaw Lake"
-	DailyGauges(i).Add LevelTimestamp, Level, WTemp, Batt
-	i = i + 1
-
-	DailyGauges(i).CGauge "Gauge - Kashwakamak Lake Gauge", "Kashwakamak Lake"
-	DailyGauges(i).Add LevelTimestamp, Level, ATemp, WTemp, Batt
-	i = i + 1
-
-	DailyGauges(i).CGauge "Gauge - Mississippi River at outlet Farm Lake", "Farm Lake"
-	DailyGauges(i).Add LevelTimestamp, Level, WTemp, Batt
-	i = i + 1
-
-	DailyGauges(i).CGauge "Gauge - Mississagagon Lake", "Mississagagon Lake"
-	DailyGauges(i).Add LevelTimestamp, Level, WTemp, Batt
-	i = i + 1
-
-	DailyGauges(i).CGauge "Gauge - Big Gull Lake", "Big Gull Lake"
-	DailyGauges(i).Add LevelTimestamp, Level, WTemp, Batt
-	i = i + 1
-
-	DailyGauges(i).CGauge "Gauge - Crotch Lake GOES", "Crotch Lake"
-	DailyGauges(i).Add LevelTimestamp, Level, Rain24H, Rain, Batt
-	i = i + 1
-
-	DailyGauges(i).CGauge "Gauge - Mississippi High Falls", "High Falls"
-	i = i + 1
-
-	DailyGauges(i).CGauge "Gauge - Mississippi River at outlet Dalhousie Lake", "Dalhousie Lake"
-	i = i + 1
-
-	DailyGauges(i).CGauge "Gauge - Palmerston Lake", "Palmerston Lake"
-	DailyGauges(i).Add LevelTimestamp, Level, Rain24H, Rain, WTemp, Batt
-	i = i + 1
-
-	DailyGauges(i).CGauge "Gauge - Canonto Lake", "Canonto Lake"
-	DailyGauges(i).Add LevelTimestamp, Level, WTemp, Batt
-	i = i + 1
-
-	DailyGauges(i).CGauge "Gauge - Lanark", "Lanark"
-	DailyGauges(i).Add LevelTimestamp, Level, WTemp, Batt
-	i = i + 1
-
-	DailyGauges(i).CGauge "Gauge - Fall River at outlet Sharbot Lake", "Sharbot Lake"
-	DailyGauges(i).Add LevelTimestamp, Stage, Rain24H, Rain, Batt
-	i = i + 1
-
-	DailyGauges(i).CGauge "Gauge - Fall River at outlet Bennett Lake", "Bennett Lake"
-	i = i + 1
-
-	DailyGauges(i).CGauge "Gauge - Mississippi Lake", "Mississippi Lake"
-	DailyGauges(i).Add LevelTimestamp, Level, ATemp, Batt
-	i = i + 1
-
-	DailyGauges(i).CGauge "Gauge - Carleton Place Dam", "C.P. Dam"
-	DailyGauges(i).Add LevelTimestamp, Level, Batt
-	i = i + 1
-
-	DailyGauges(i).CGauge "Gauge - Carp River at Maple Grove", "Carp River at Maple Grove"
-	DailyGauges(i).Add LevelTimestamp, Level, Rain24H, Rain, Batt
-	i = i + 1
-
-	DailyGauges(i).CGauge "Gauge - Widow Lake", "Widow Lake"
-	DailyGauges(i).Add LevelTimestamp, Level, WTemp, Batt
-	i = i + 1
-
-
-	i = 0
-	WeeklyGauges(i).CGauge "Gauge - Shabomeka Lake", "Shabomeka Lake (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Mazinaw Lake", "Mazinaw Lake (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Little Marble Lake", "Little Marble Lake (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Mississagagon Lake", "Mississagagon Lake (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Kashwakamak Lake Gauge", "Kashwakamak Lake (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Mississippi River at outlet Farm Lake", "Farm Lake (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Mississippi River at Ardoch Bridge", "Ardoch Bridge (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Malcolm Lake", "Malcolm Lake (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Pine Lake", "Pine Lake (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Big Gull Lake", "Big Gull Lake (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Buckshot Lake", "Buckshot Lake (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Crotch Lake GOES", "Crotch Lake (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Mississippi River at High Falls", "High Falls G.S. (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Mosque Lake", "Mosque Lake (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Summit Lake", "Summit Lake (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Palmerston Lake", "Palmerston Lake (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Canonto Lake", "Canonto Lake (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Fall River at outlet Bennett Lake", "Bennett Lake (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Mississippi River at outlet Dalhousie Lake", "Dalhousie Lake (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Silver Lake", "Silver Lake (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Fall River at outlet Sharbot Lake", "Sharbot Lake (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Widow Lake", "Widow Lake (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Lanark", "Lanark Bridge (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Lanark Dam", "Lanark Dam (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Mississippi River at Almonte Bridge", "Almonte Bridge (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Clayton Lake", "Clayton Lake (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
-
-	WeeklyGauges(i).CGauge "Gauge - Carleton Place Dam", "C.P. Dam (weekly)"
-	WeeklyGauges(i).Add StaffTimestamp, StaffLevel, StaffTag, StaffComment
-	i = i + 1
+	Dim Sensors As Collection
+	Set Sensors = InitializeSensors()
+
+	Set Tables = New CTableList
+
+	Dim fGauge As New CGauge 'CGauge Factory
+	Dim fTable As New CTable 'CTable Factory
+	With fGauge
+		Tables.Add fTable.Init(6) _
+			.Add(.Init("Gauge - Mississippi River below Marble Lake", "Myers Cave flow") _
+				.Add(Sensors("FlowTimestamp"), Sensors("Stage"), Sensors("Flow"), Sensors("Rain24H"), Sensors("Rain"), Sensors("Batt")))
+		Tables.Table().Add .Init("Gauge - Buckshot Creek near Plevna", "Buckshot Creek flow") _
+			.Add(Sensors("FlowTimestamp"), Sensors("Stage"), Sensors("Flow"), Sensors("Rain24H"), Sensors("Rain"), Sensors("Batt"))
+		Tables.Table().Add .Init("Gauge - Mississippi River at Ferguson Falls", "Ferguson Falls flow") _
+			.Add(Sensors("FlowTimestamp"), Sensors("Stage"), Sensors("Flow"), Sensors("Rain24H"), Sensors("Rain"), Sensors("Batt"))
+		Tables.Table().Add .Init("Gauge - Mississippi River at Appleton", "Appleton flow") _
+			.Add(Sensors("FlowTimestamp"), Sensors("Stage"), Sensors("Flow"), Sensors("Rain24H"), Sensors("Rain"), Sensors("Batt"))
+		Tables.Table().Add .Init("Gauge - Clyde River at Gordon Rapids", "Gordon Rapids flow") _
+			.Add(Sensors("FlowTimestamp"), Sensors("Stage"), Sensors("Flow"), Sensors("Rain24H"), Sensors("Rain"), Sensors("Batt"))
+		Tables.Table().Add .Init("Gauge - Clyde River near Lanark", "Lanark stream flow") _
+			.Add(Sensors("FlowTimestamp"), Sensors("Stage"), Sensors("Flow"), Sensors("Rain24H"), Sensors("Rain"), Sensors("Batt"))
+		Tables.Table().Add .Init("Gauge - Indian River near Blakeney", "Mill of Kintail flow") _
+			.Add(Sensors("FlowTimestamp"), Sensors("Stage"), Sensors("Flow"), Sensors("Rain24H"), Sensors("Rain"), Sensors("Batt"))
+		Tables.Table().Add .Init("Gauge - Carp River near Kinburn", "Kinburn flow") _
+			.Add(Sensors("FlowTimestamp"), Sensors("Stage"), Sensors("Flow"), Sensors("Rain24H"), Sensors("Rain"), Sensors("Batt"))
+		Tables.Table().Add .Init("Gauge - Fall River at outlet Bennett Lake", "Bennett Lake outflow") _
+			.Add(Sensors("FlowTimestamp"), Sensors("Stage"), Sensors("Flow"), Sensors("Rain24H"), Sensors("Rain"), Sensors("Batt"))
+		Tables.Table().Add .Init("Gauge - Mississippi River at outlet Dalhousie Lake", "Dalhousie Lk outflow") _
+			.Add(Sensors("FlowTimestamp"), Sensors("Stage"), Sensors("Flow"), Sensors("Rain24H"), Sensors("Rain"), Sensors("Batt"))
+
+		Tables.Table().Add .Init("Gauge - Mississippi High Falls", "High Falls Flow") _
+			.Add(Sensors("FlowTimestamp"), Sensors("Flow"))
+
+		Tables.Table().Add .Init("Gauge - Poole Creek at Maple Grove", "Poole Creek at Maple Grove") _
+			.Add(Sensors("FlowTimestamp"), Sensors("Stage"), Sensors("Flow"), Sensors("Batt"))
+		Tables.Table().Add .Init("Gauge - Carp River at Richardson", "Carp River at Richardson") _
+			.Add(Sensors("FlowTimestamp"), Sensors("Stage"), Sensors("Flow"), Sensors("Batt"))
+	End With
+
+	With fGauge
+		Tables.Add fTable.Init(Tables.Table().row + Tables.Table().count + 4) _
+			.Add(.Init("Gauge - Shabomeka Lake", "Shabomeka Lake") _
+				.Add(Sensors("LevelTimestamp"), Sensors("Level"), Sensors("Rain24H"), Sensors("Rain"), Sensors("Batt")))
+		Tables.Table().Add .Init("Gauge - Mazinaw Lake", "Mazinaw Lake") _
+			.Add(Sensors("LevelTimestamp"), Sensors("Level"), Sensors("WTemp"), Sensors("Batt"))
+		Tables.Table().Add .Init("Gauge - Kashwakamak Lake Gauge", "Kashwakamak Lake") _
+			.Add(Sensors("LevelTimestamp"), Sensors("Level"), Sensors("ATemp"), Sensors("WTemp"), Sensors("Batt"))
+		Tables.Table().Add .Init("Gauge - Mississippi River at outlet Farm Lake", "Farm Lake") _
+			.Add(Sensors("LevelTimestamp"), Sensors("Level"), Sensors("WTemp"), Sensors("Batt"))
+		Tables.Table().Add .Init("Gauge - Mississagagon Lake", "Mississagagon Lake") _
+			.Add(Sensors("LevelTimestamp"), Sensors("Level"), Sensors("WTemp"), Sensors("Batt"))
+		Tables.Table().Add .Init("Gauge - Big Gull Lake", "Big Gull Lake") _
+			.Add(Sensors("LevelTimestamp"), Sensors("Level"), Sensors("WTemp"), Sensors("Batt"))
+		Tables.Table().Add .Init("Gauge - Crotch Lake GOES", "Crotch Lake") _
+			.Add(Sensors("LevelTimestamp"), Sensors("Level"), Sensors("Rain24H"), Sensors("Rain"), Sensors("Batt"))
+
+		Tables.Table().Add .Init("Gauge - Mississippi High Falls", "High Falls") _
+			.Add(Sensors("LevelTimestamp"), Sensors("Level"))
+		Tables.Table().Add .Init("Gauge - Mississippi River at outlet Dalhousie Lake", "Dalhousie Lake") _
+			.Add(Sensors("LevelTimestamp"), Sensors("Stage"), Sensors("Level"), Sensors("Rain24H"), Sensors("Rain"), Sensors("Batt"))
+
+		Tables.Table().Add .Init("Gauge - Palmerston Lake", "Palmerston Lake") _
+			.Add(Sensors("LevelTimestamp"), Sensors("Level"), Sensors("Rain24H"), Sensors("Rain"), Sensors("WTemp"), Sensors("Batt"))
+		Tables.Table().Add .Init("Gauge - Canonto Lake", "Canonto Lake") _
+			.Add(Sensors("LevelTimestamp"), Sensors("Level"), Sensors("WTemp"), Sensors("Batt"))
+		Tables.Table().Add .Init("Gauge - Lanark", "Lanark") _
+			.Add(Sensors("LevelTimestamp"), Sensors("Level"), Sensors("WTemp"), Sensors("Batt"))
+		Tables.Table().Add .Init("Gauge - Fall River at outlet Sharbot Lake", "Sharbot Lake") _
+			.Add(Sensors("LevelTimestamp"), Sensors("Stage"), Sensors("Rain24H"), Sensors("Rain"), Sensors("Batt"))
+
+		Tables.Table().Add .Init("Gauge - Fall River at outlet Bennett Lake", "Bennett Lake") _
+			.Add(Sensors("LevelTimestamp"), Sensors("Stage"), Sensors("Level"), Sensors("Rain24H"), Sensors("Rain"), Sensors("Batt"))
+
+		Tables.Table().Add .Init("Gauge - Mississippi Lake", "Mississippi Lake") _
+			.Add(Sensors("LevelTimestamp"), Sensors("Level"), Sensors("ATemp"), Sensors("Batt"))
+		Tables.Table().Add .Init("Gauge - Carleton Place Dam", "C.P. Dam") _
+			.Add(Sensors("LevelTimestamp"), Sensors("Level"), Sensors("Batt"))
+		Tables.Table().Add .Init("Gauge - Carp River at Maple Grove", "Carp River at Maple Grove") _
+			.Add(Sensors("LevelTimestamp"), Sensors("Level"), Sensors("Rain24H"), Sensors("Rain"), Sensors("Batt"))
+		Tables.Table().Add .Init("Gauge - Widow Lake", "Widow Lake") _
+			.Add(Sensors("LevelTimestamp"), Sensors("Level"), Sensors("WTemp"), Sensors("Batt"))
+	End With
+
+	With fGauge
+		Tables.Add fTable.Init(Tables.Table().row + Tables.Table().count + 3) _
+			.Add(.Init("Gauge - Shabomeka Lake", "Shabomeka Lake (weekly)").OverwriteBlanks() _
+				.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment")))
+		Tables.Table().Add .Init("Gauge - Mazinaw Lake", "Mazinaw Lake (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Little Marble Lake", "Little Marble Lake (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Mississagagon Lake", "Mississagagon Lake (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Kashwakamak Lake Gauge", "Kashwakamak Lake (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Mississippi River at outlet Farm Lake", "Farm Lake (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Mississippi River at Ardoch Bridge", "Ardoch Bridge (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Malcolm Lake", "Malcolm Lake (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Pine Lake", "Pine Lake (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Big Gull Lake", "Big Gull Lake (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Buckshot Lake", "Buckshot Lake (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Crotch Lake GOES", "Crotch Lake (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Mississippi River at High Falls", "High Falls G.S. (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Mosque Lake", "Mosque Lake (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Summit Lake", "Summit Lake (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Palmerston Lake", "Palmerston Lake (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Canonto Lake", "Canonto Lake (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Fall River at outlet Bennett Lake", "Bennett Lake (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Mississippi River at outlet Dalhousie Lake", "Dalhousie Lake (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Silver Lake", "Silver Lake (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Fall River at outlet Sharbot Lake", "Sharbot Lake (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Widow Lake", "Widow Lake (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Lanark", "Lanark Bridge (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Lanark Dam", "Lanark Dam (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Mississippi River at Almonte Bridge", "Almonte Bridge (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Clayton Lake", "Clayton Lake (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+		Tables.Table().Add .Init("Gauge - Carleton Place Dam", "C.P. Dam (weekly)").OverwriteBlanks() _
+			.Add(Sensors("StaffTimestamp"), Sensors("StaffLevel"), Sensors("StaffTag"), Sensors("StaffComment"))
+	End With
 End Sub
 
 

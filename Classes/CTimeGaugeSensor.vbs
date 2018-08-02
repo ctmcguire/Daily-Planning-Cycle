@@ -1,7 +1,6 @@
 'CGaugeSensor Class
 'Implements IGaugeSensor
 
-Private pName As String 'What value the gauge sensor measures (flow, level, precipitation, etc)
 Private pColumn As String 'Column where this sensor's data will appear in the table
 Private pRangeIndex As Integer 'Column where this sensor's data is retrieved from in raw1
 Private pTsId As String
@@ -31,15 +30,21 @@ Public Sub Class_Initialize()
 End Sub
 
 
-Public Sub Clone(Original As CGaugeSensor, Optional Column As String = "")
+Public Function InitClone(Original As CGaugeSensor, Optional Column As String = "") As CTimeGaugeSensor
+	Dim temp As New CTimeGaugeSensor
+	Set InitClone = temp.Clone(Original, Column)
+End Function
+Public Function Clone(Original As CGaugeSensor, Optional Column As String = "") As CTimeGaugeSensor
+	Set Clone = Me
+
 	If pInitialized Then _
-		Exit Sub
+		Exit Function
 	Set pOriginal = Original
 	pColumn = Column
 	pIsClone = True
 	
 	pInitialized = True
-End Sub
+End Function
 
 Public Property Get IsClone()
 	IsClone = pIsClone
@@ -51,14 +56,6 @@ Public Property Get Column()
 		Exit Function
 	End If
 	Column = pColumn
-End Property
-
-Public Property Get Name()
-	If pIsClone Then
-		Name = pOriginal.Name & "_timestamp"
-		Exit Function
-	End If
-	Name = pName
 End Property
 
 Public Property Get RangeIndex()
@@ -214,4 +211,24 @@ Private Function GetData(ID As String, Range As String)
 	Erred:
 	Call DebugLogging.Erred
 	GetData = ""
+End Function
+
+Public Function GetSql(i As Integer, InputDate As String, ByRef Headers As Collection, ByRef Values As Collection, Optional UpdateOnly As Boolean = False)
+	With ThisWorkbook
+		If IsEmpty(.Sheets(InputDate).Range(pColumn & i)) Then _
+			Exit Function
+		Headers.Add "time", "time"
+		Values.Add Format(.Sheets(InputDate).Range(pColumn & i), "h:mm AMPM"), "time"
+
+		If UpdateOnly Then _
+			Exit Function
+
+		Headers.Add "date", "date"
+		Values.Add Format(.Sheets(InputDate).Range(pColumn & i), "yyyy-mm-dd"), "date"
+	End With
+End Function
+
+
+Public Function SqlCol(col As String, Optional update As Boolean = True) As CTimeGaugeSensor
+	Set SqlCol = Me
 End Function

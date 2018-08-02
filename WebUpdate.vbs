@@ -49,30 +49,13 @@ Sub UpdateSql(sheetdate As String, Optional IsAuto As Boolean = False)
 	'-----------------------------------------------------------------------------------------------------------------------------'
 	'The With statement ensures the macro references the daily planning cycle workbook.
 	With ThisWorkbook
-		Call DebugLogging.PrintMsg("Connected to MySQL Database.  Uploading FlowGauge data...")
+		Call DebugLogging.PrintMsg("Connected to MySQL Database.  Uploading Gauge data...")
 
-		For i = 0 To UBound(FlowGauges)
-			'If the value exists, the Date, Time, Value and Historical average are uploaded.
-			If .Sheets("Raw2").Range("E" & (flowStart + i)) < .Sheets(InputDate).Range("E" & (flowStart + i)) Then _
-				Call RunSql(i + flowStart, InputDate, FlowGauges(i).Name, LevelsConn)
-		Next i
+		For i = 0 To Tables.count - 1
+			Tables(i).RunSql InputDate, LevelsConn
+		Next
 
-		Call DebugLogging.PrintMsg("FlowGauge data uploaded.  Uploading DailyGauge data...")
-
-		For i = 0 To UBound(DailyGauges)
-			If .Sheets("Raw2").Range("E" & (dailyStart + i)) < .Sheets(InputDate).Range("E" & (dailyStart + i)) Then _
-				Call RunSql(i + dailyStart, InputDate, DailyGauges(i).Name, LevelsConn)
-		Next i
-
-		Call DebugLogging.PrintMsg("DailyGauge data uploaded.  Uploading WeeklyGauge data...")
-
-		For i = 0 To UBound(WeeklyGauges)
-			'These values are the same between the Raw2 sheet and the other sheets, so this if statement instead checks if the value is positive
-			If 0 < .Sheets(InputDate).Range("E" & (weeklyStart + i)) Then _
-				Call RunSql(i + weeklyStart, InputDate, WeeklyGauges(i).Name, LevelsConn)
-		Next i
-
-		Call DebugLogging.PrintMsg("WeeklyGauge data uploaded.  Closing connection to MySQL Database...")
+		Call DebugLogging.PrintMsg("Gauge data uploaded.  Closing connection to MySQL Database...")
 
 		LevelsConn.Close
 
