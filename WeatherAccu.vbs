@@ -5,6 +5,10 @@ Private Function SendXML(xmlhttp As Object) As Boolean
 	SendXML = False
 	With xmlhttp
 		.send
+		If .status <> 200 Then
+			SendXML = False
+			Exit Function
+		End If
 	End With
 	SendXML = True
 	OnError:
