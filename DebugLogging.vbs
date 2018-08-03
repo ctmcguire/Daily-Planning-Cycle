@@ -8,12 +8,21 @@
 ' * @return the current value of DebugMsg
 ' */
 Private DebugMsg As String
-Public Function PrintMsg(Optional Txt As String = "")
+Private output As Object
+Public Function PrintMsg(Optional Txt As String = "", Optional NoStatus As Boolean = False)
+	If Not output Is Nothing And Txt <> "" Then _
+		output.WriteLine "[" & Now & "] " & Txt
 	If Not Txt = "" Then _
 		DebugMsg = DebugMsg & "[" & Now & "] " & Txt & vbCrLf 'Don't add text if no input is given
 	PrintMsg = DebugMsg 'Return to get the value of DebugMsg
-	If Not Txt = "" Then _
-		Call ChangeStatus(Txt)
+	If Txt = "" Or NoStatus Then _
+		Exit Function
+	Call ChangeStatus(Txt)
+End Function
+
+
+Public Function SetOutput(Optional obj As Object = Nothing)
+	Set output = obj
 End Function
 
 Public Sub Clear()
