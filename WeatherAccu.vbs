@@ -5,16 +5,26 @@ Private Function SendXML(xmlhttp As Object) As Boolean
 	SendXML = False
 	With xmlhttp
 		.send
+		SendXML = .waitForResponse(60000)
 		If .status <> 200 Then
+			Call DebugLogging.PrintMsg("AccuWeather responded with http code " & .status)
 			SendXML = False
 			Exit Function
 		End If
 	End With
 	SendXML = True
 	OnError:
+		With xmlhttp
+			If .status = 200 Then
+				SendXML = True
+				Exit Function
+			End If
+			Call DebugLogging.PrintMsg("AccuWeather timed out with http code " & .status)
+		End With
 End Function
 
 Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset As Integer, Optional IsAuto As Boolean = False)
+	On Error GoTo OnError
 	'-----------------------------------------------------------------------------------------------------------------------------'
 	'Please send any questions or feedback to cmcguire@mvc.on.ca
 	'-----------------------------------------------------------------------------------------------------------------------------'
@@ -202,7 +212,9 @@ Private Sub AccuWeatherScraper(SheetName As String, BaseUrl As String, DayOffset
 	End With
 
 	Call DebugLogging.PrintMsg("AccuWeather - 5 day forecasts retrieved.")
-
+	Exit Sub
+	OnError:
+		Call DebugLogging.Erred
 End Sub
 
 Sub GeneralScraper(SheetName As String, LocationUrl As String, Optional IsAuto As Boolean = False, Optional RowNo As Integer = 0)
